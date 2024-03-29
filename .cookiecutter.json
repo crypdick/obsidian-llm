@@ -1,0 +1,16 @@
+{
+  "_checkout": "2022.6.3",
+  "_output_dir": "/home/richard/src/PERSONAL",
+  "_repo_dir": "/home/richard/.cookiecutters/cookiecutter-hypermodern-python",
+  "_template": "gh:cjolowicz/cookiecutter-hypermodern-python",
+  "author": "Richard Decal",
+  "copyright_year": "2024",
+  "development_status": "Development Status :: 1 - Planning",
+  "email": "public@richarddecal.com",
+  "friendly_name": "Obsidian Llm",
+  "github_user": "crypdick",
+  "license": "MIT",
+  "package_name": "obsidian_llm",
+  "project_name": "obsidian-llm",
+  "version": "0.0.0"
+}
