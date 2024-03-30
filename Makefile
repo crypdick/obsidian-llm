@@ -1,0 +1,2 @@
+test:
+	nox --session=tests
