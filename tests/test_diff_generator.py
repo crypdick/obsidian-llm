@@ -15,7 +15,7 @@ def test_generate_diff_and_update_without_frontmatter():
 
     # do not edit the original file. instead, create a copy as a temporary file
     with NamedTemporaryFile(mode="w+", suffix=".md") as tmp_file:
-        with open(file_path, "r") as original_file:
+        with open(file_path) as original_file:
             content = original_file.read()
             tmp_file.write(content)
             tmp_file.seek(0)
@@ -39,7 +39,7 @@ def test_generate_diff_and_update_with_frontmatter_no_alias():
 
     # do not edit the original file. instead, create a copy as a temporary file
     with NamedTemporaryFile(mode="w+", suffix=".md") as tmp_file:
-        with open(file_path, "r") as original_file:
+        with open(file_path) as original_file:
             content = original_file.read()
             tmp_file.write(content)
             # reset pointer
@@ -74,7 +74,7 @@ def test_generate_diff_and_update_with_existing_alias():
 
     # do not edit the original file. instead, create a copy as a temporary file
     with NamedTemporaryFile(mode="w+", suffix=".md") as tmp_file:
-        with open(file_path, "r") as original_file:
+        with open(file_path) as original_file:
             content = original_file.read()
             tmp_file.write(content)
             tmp_file.seek(0)
@@ -112,7 +112,7 @@ def test_generate_diff_and_update_with_existing_alias_yaml():
 
     # do not edit the original file. instead, create a copy as a temporary file
     with NamedTemporaryFile(mode="w+", suffix=".md") as tmp_file:
-        with open(file_path, "r") as original_file:
+        with open(file_path) as original_file:
             content = original_file.read()
             tmp_file.write(content)
             tmp_file.seek(0)
