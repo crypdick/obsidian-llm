@@ -21,10 +21,8 @@ def generate_diff_and_update(file_path, new_aliases, frontmatter_dict, content):
         f"Starting the diff generation process for {file_path} with new aliases: {new_aliases}"
     )
     if not new_aliases:
-        logging.info(
-            f"No new aliases suggested for {file_path}. Skipping diff generation."
-        )
-        return
+        # do not add new aliases; just add processed_for key
+        new_aliases = []
 
     # Update the aliases in the frontmatter
     if "aliases" in frontmatter_dict and isinstance(frontmatter_dict["aliases"], list):
@@ -35,7 +33,14 @@ def generate_diff_and_update(file_path, new_aliases, frontmatter_dict, content):
         frontmatter_dict["aliases"].extend(unique_new_aliases)
     else:
         logging.info(f"No existing aliases found in {file_path}. Adding new aliases.")
-        frontmatter_dict["aliases"] = new_aliases
+        if len(new_aliases) > 0:
+            frontmatter_dict["aliases"] = new_aliases
+
+    # if the aliases value is not a list or is an empty list, set it to an empty list
+    if "aliases" in frontmatter_dict and (
+        not isinstance(frontmatter_dict["aliases"], list)
+    ):
+        frontmatter_dict["aliases"] = []
 
     # Add 'processed_for' key to mark the file as processed
     if "processed_for" not in frontmatter_dict:
@@ -45,7 +50,7 @@ def generate_diff_and_update(file_path, new_aliases, frontmatter_dict, content):
 
     # Serialize the updated frontmatter back to a YAML string
     updated_frontmatter_content = yaml.dump(
-        frontmatter_dict, default_flow_style=False, sort_keys=False
+        frontmatter_dict, default_flow_style=False, sort_keys=False, indent=2
     )
     updated_frontmatter_content = "---\n" + updated_frontmatter_content + "---\n"
 
