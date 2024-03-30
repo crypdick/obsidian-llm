@@ -16,7 +16,7 @@ classifiers = [
 Changelog = "https://github.com/crypdick/obsidian-llm/releases"
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.13"
+python = ">=3.8,<3.13"
 click = ">=8.0.1"
 pyautogen = "^0.2.21"
 pytest = "^8.1.1"
