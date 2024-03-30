@@ -19,6 +19,10 @@ Changelog = "https://github.com/crypdick/obsidian-llm/releases"
 python = ">=3.8,<3.13"
 click = ">=8.0.1"
 pyautogen = "^0.2.21"
+pytest = "^8.1.1"
+pydotenv = "^0.0.7"
+openai = "^1.14.3"
+pyyaml = "^6.0.1"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"
