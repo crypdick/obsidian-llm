@@ -23,21 +23,22 @@ load_dotenv()
 )
 @click.option(
     "--task",
-    "-t",
     type=click.Choice(["aliases"]),
     default="aliases",
 )
+@click.option("--test-vault", is_flag=True, help="Run tests.")
 @click.version_option()
-def main(vault_path, task) -> None:
+def main(vault_path, task, test_vault) -> None:
     """Obsidian Vault Improvement Assistant."""
     if not vault_path:
+        use_vault = "TEST_OBSIDIAN_VAULT_PATH" if test_vault else "OBSIDIAN_VAULT_PATH"
         logging.info(
-            "Vault path not provided. Using environment variable OBSIDIAN_VAULT_PATH."
+            f"Vault path not provided. Using environment variable {use_vault}."
         )
-        vault_path = os.getenv("OBSIDIAN_VAULT_PATH")
+        vault_path = os.getenv(use_vault)
         if not vault_path:
             logging.error(
-                "Vault path not provided. Please provide a valid path to the vault."
+                "Vault path not provided. Please provide a valid path to the vault or configure in `.env`."
             )
             return
 
