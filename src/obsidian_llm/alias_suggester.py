@@ -5,11 +5,55 @@ import re
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from .diff_generator import generate_diff_and_update
+from .frontmatter_verifier import verify_frontmatter
+from .markdown_enumerator import enumerate_markdown_files
+
 
 load_dotenv()  # Load environment variables from .env file
 
 
-def generate_alias_suggestions(document_title, existing_aliases=None):
+def generate_all_aliases(vault_path: str):
+    md_files = enumerate_markdown_files(vault_path)
+    for file_path in md_files:
+        try:
+            content = ""
+            with open(file_path, encoding="utf-8") as file:
+                content = file.read()
+            frontmatter_dict, frontmatter_str = verify_frontmatter(file_path)
+            if frontmatter_dict:
+                if (
+                    "processed_for" in frontmatter_dict
+                    and "new_aliases" in frontmatter_dict["processed_for"]
+                ):
+                    logging.info(f"Skipping already processed file: {file_path}")
+                    continue
+                # parse fpath stem as document title
+                document_title = os.path.splitext(os.path.basename(file_path))[0]
+                existing_aliases = frontmatter_dict.get("aliases", [])
+                new_aliases = generate_alias_suggestions(
+                    document_title, existing_aliases
+                )
+                if new_aliases:
+                    if "processed_for" not in frontmatter_dict:
+                        frontmatter_dict["processed_for"] = []
+                    frontmatter_dict["processed_for"].append("new_aliases")
+                    generate_diff_and_update(
+                        file_path, new_aliases, frontmatter_dict, content
+                    )
+                    logging.info(
+                        f"Diff generated and user decision processed for {file_path}."
+                    )
+                else:
+                    logging.info(f"No new aliases suggested for {file_path}. Skipping.")
+            else:
+                continue
+        except Exception as e:
+            logging.error(f"An error occurred while processing file {file_path}: {e}")
+            logging.error("Error trace:", exc_info=True)
+
+
+def generate_alias_suggestions(document_title: str, existing_aliases=None):
     """
     Generates alias suggestions for a given document title using AutoGPT, excluding existing aliases.
 
@@ -20,6 +64,8 @@ def generate_alias_suggestions(document_title, existing_aliases=None):
     if existing_aliases is None:
         existing_aliases = []
 
+    assert document_title != "", "Document title cannot be empty."
+
     try:
         # Load your OpenAI API key from an environment variable
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -28,7 +74,7 @@ def generate_alias_suggestions(document_title, existing_aliases=None):
             return None
 
         # Construct the prompt for AutoGPT
-        prompt = f"""You are an assistant helping a user generate alias or redirect suggestions for a document title. Reasons for creating alias redirects include:
+        prompt = """You are an assistant helping a user generate alias or redirect suggestions for a document title. Reasons for creating alias redirects include:
 
     * Alternative names redirect to the most appropriate article title (e.g., Edson Arantes do Nascimento redirects to Pelé).
     * Plurals (e.g., Greenhouse gases redirects to Greenhouse gas).
@@ -43,13 +89,16 @@ def generate_alias_suggestions(document_title, existing_aliases=None):
     Suggested aliases should be new-line delimited with no additional formatting (do not number or bullet the list). If none of these reasons apply, simply reply with "None". The suggestions should be synonymous with the original article title. Suggest two aliases max. \n\nSuggested aliases:"""
 
         # Send the prompt to AutoGPT
+        task = f"Generate alias suggestions for the document title '{document_title}'"
+        if existing_aliases:
+            task += f", excluding the following existing aliases: {', '.join(existing_aliases)}"
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": prompt},
                 {
                     "role": "user",
-                    "content": f"Generate alias suggestions for the document title '{document_title}', excluding the following existing aliases: {', '.join(existing_aliases)}.",
+                    "content": task,
                 },
             ],
             max_tokens=50,
@@ -61,7 +110,7 @@ def generate_alias_suggestions(document_title, existing_aliases=None):
         suggestions = response.choices[0].message.content.strip()
         if suggestions.lower() == "none":
             # Short-circuit if no suggestions are generated
-            logging.info(f"No new alias suggestions generated for '{document_title}'.")
+            logging.info(f"LLM suggested no new aliases for '{document_title}'.")
             return None
 
         # Extract and return the suggested aliases
