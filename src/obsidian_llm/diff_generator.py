@@ -40,7 +40,8 @@ def generate_diff_and_update(file_path, new_aliases, frontmatter_dict, content):
     # Add 'processed_for' key to mark the file as processed
     if "processed_for" not in frontmatter_dict:
         frontmatter_dict["processed_for"] = []
-    frontmatter_dict["processed_for"].append("new_aliases")
+    if "new_aliases" not in frontmatter_dict["processed_for"]:
+        frontmatter_dict["processed_for"].append("new_aliases")
 
     # Serialize the updated frontmatter back to a YAML string
     updated_frontmatter_content = yaml.dump(
