@@ -86,7 +86,8 @@ def generate_alias_suggestions(document_title: str, existing_aliases=None):
     * Alternative spellings or punctuation. e.g., Colour redirects to Color, and Al-Jazeera redirects to Al Jazeera.
     * Representations using ASCII characters, that is, common transliterations (e.g., Pele also redirects to Pelé while Kurt Goedel and Kurt Godel redirect to Kurt Gödel).
 
-    Suggested aliases should be new-line delimited with no additional formatting (do not number or bullet the list). If none of these reasons apply, simply reply with "None". The suggestions should be synonymous with the original article title. Suggest two aliases max. \n\nSuggested aliases:"""
+    Suggested aliases should be new-line delimited with no additional formatting (do not number or bullet the list). If none of these reasons apply, simply reply with "None". 
+    The suggestions should be synonymous with the original article title. Suggest two aliases max."""
 
         # Send the prompt to AutoGPT
         task = f"Generate alias suggestions for the document title '{document_title}'"
