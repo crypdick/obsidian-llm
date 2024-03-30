@@ -1,4 +1,6 @@
 import logging
+import subprocess
+from tempfile import NamedTemporaryFile
 
 import yaml
 
@@ -8,7 +10,7 @@ from .frontmatter_verifier import verify_frontmatter
 def generate_diff_and_update(file_path, new_aliases, frontmatter_dict, content):
     """
     Generates a diff between the original markdown file and a temporary file with proposed alias additions.
-    Automatically updates the original file with the new aliases without user interaction.
+    Opens the proposed diff in `meld` for user to review and accept, reject, or edit the changes.
 
     :param file_path: Path to the original markdown file.
     :param new_aliases: List of new aliases to be added.
@@ -53,8 +55,12 @@ def generate_diff_and_update(file_path, new_aliases, frontmatter_dict, content):
 
     # Write the updated content back to the original file
     try:
-        with open(file_path, "w", encoding="utf-8") as original_file:
-            original_file.write(new_content)
+        with NamedTemporaryFile(mode="w", delete=False, encoding="utf-8") as temp_file:
+            temp_file.write(new_content)
+            temp_file_path = temp_file.name
+
+        # Open the diff in meld for user review, and wait for the user to close the meld window
+        subprocess.run(["meld", file_path, temp_file_path])
         logging.info(
             f"Updated file {file_path} with new aliases and marked as processed."
         )
