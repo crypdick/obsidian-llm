@@ -1,6 +1,7 @@
 """Command-line interface."""
 
 import logging
+import os
 
 import click
 from dotenv import load_dotenv
@@ -19,12 +20,21 @@ load_dotenv()
 @click.argument(
     "vault_path",
     type=click.Path(exists=True, file_okay=False, dir_okay=True, readable=True),
-    required=True,
-    help="Path to the vault directory. This directory must exist and be readable.",
+    required=False,
 )
 @click.version_option()
 def main(vault_path) -> None:
     """Obsidian Vault Improvement Assistant."""
+    if not vault_path:
+        logging.info(
+            "Vault path not provided. Using environment variable OBSIDIAN_VAULT_PATH."
+        )
+        vault_path = os.getenv("OBSIDIAN_VAULT_PATH")
+        if not vault_path:
+            logging.error(
+                "Vault path not provided. Please provide a valid path to the vault."
+            )
+            return
     logging.basicConfig(level=logging.INFO)
     md_files = enumerate_markdown_files(vault_path)
     for file_path in md_files:
