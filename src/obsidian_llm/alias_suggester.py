@@ -5,8 +5,9 @@ import re
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from .diff_generator import generate_diff_and_update
-from .frontmatter_verifier import verify_frontmatter
+from .diff_generator import apply_diff
+from .diff_generator import get_alias_diff
+from .frontmatter_verifier import parse_frontmatter
 from .markdown_enumerator import enumerate_markdown_files
 
 
@@ -46,10 +47,7 @@ def generate_all_aliases(vault_path: str):
             continue
 
         try:
-            content = ""
-            with open(file_path, encoding="utf-8") as file:
-                content = file.read()
-            frontmatter_dict, frontmatter_str = verify_frontmatter(file_path)
+            frontmatter_dict, frontmatter_str = parse_frontmatter(file_path)
             if frontmatter_dict:
                 if (
                     "processed_for" in frontmatter_dict
@@ -63,9 +61,13 @@ def generate_all_aliases(vault_path: str):
                     document_title, existing_aliases
                 )
 
-                generate_diff_and_update(
-                    file_path, new_aliases, frontmatter_dict, content
+                new_content = get_alias_diff(
+                    file_path,
+                    new_aliases,
+                    frontmatter_dict,
                 )
+                apply_diff(new_content, file_path)
+
                 logging.info(
                     f"Diff generated and user decision processed for {file_path}."
                 )
@@ -110,7 +112,7 @@ def generate_alias_suggestions(document_title: str, existing_aliases=None):
     * Alternative spellings or punctuation. e.g., Colour redirects to Color, and Al-Jazeera redirects to Al Jazeera.
     * Representations using ASCII characters, that is, common transliterations (e.g., Pele also redirects to Pelé while Kurt Goedel and Kurt Godel redirect to Kurt Gödel).
 
-    Suggested aliases should be new-line delimited with no additional formatting (do not number or bullet the list). If none of these reasons apply, simply reply with "None". 
+    Suggested aliases should be new-line delimited with no additional formatting (do not number or bullet the list). If none of these reasons apply, simply reply with "None".
     The suggestions should be synonymous with the original article title. Suggest two aliases max."""
 
         # Send the prompt to AutoGPT

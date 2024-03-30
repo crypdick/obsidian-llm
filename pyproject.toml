@@ -23,6 +23,7 @@ pytest = "^8.1.1"
 pydotenv = "^0.0.7"
 openai = "^1.14.3"
 pyyaml = "^6.0.1"
+beartype = "^0.17.2"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"

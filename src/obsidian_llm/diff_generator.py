@@ -3,11 +3,14 @@ import subprocess
 from tempfile import NamedTemporaryFile
 
 import yaml
+from beartype import beartype
 
-from .frontmatter_verifier import verify_frontmatter
+from obsidian_llm.io import read_md
+
+from .frontmatter_verifier import parse_frontmatter
 
 
-def generate_diff_and_update(file_path, new_aliases, frontmatter_dict, content):
+def get_alias_diff(file_path, new_aliases, frontmatter_dict: dict | None):
     """
     Generates a diff between the original markdown file and a temporary file with proposed alias additions.
     Opens the proposed diff in `meld` for user to review and accept, reject, or edit the changes.
@@ -17,12 +20,17 @@ def generate_diff_and_update(file_path, new_aliases, frontmatter_dict, content):
     :param frontmatter_dict: Parsed frontmatter of the markdown file as a dictionary.
     :param content: The full content of the markdown file.
     """
+    if not new_aliases and not frontmatter_dict:
+        logging.info(f"No new aliases or frontmatter found in {file_path}.")
+        return
     logging.info(
         f"Starting the diff generation process for {file_path} with new aliases: {new_aliases}"
     )
     if not new_aliases:
         # do not add new aliases; just add processed_for key
         new_aliases = []
+    if not frontmatter_dict:
+        frontmatter_dict = {}
 
     # Update the aliases in the frontmatter
     if "aliases" in frontmatter_dict and isinstance(frontmatter_dict["aliases"], list):
@@ -55,23 +63,43 @@ def generate_diff_and_update(file_path, new_aliases, frontmatter_dict, content):
     updated_frontmatter_content = "---\n" + updated_frontmatter_content + "---\n"
 
     # Replace the original frontmatter in the file content with the updated frontmatter content
-    new_content = content.replace(
-        verify_frontmatter(file_path)[1], updated_frontmatter_content, 1
+    old_content = read_md(file_path)
+    new_content = old_content.replace(
+        parse_frontmatter(file_path)[1], updated_frontmatter_content, 1
     )
+    return new_content
 
-    # Write the updated content back to the original file
+
+@beartype
+def apply_diff(new_content: str | None, old_file, auto_apply: bool = False):
+    """
+    Apply the diff to the original file content and open the diff in meld for user review.
+
+    :param new_content: The new content to be applied to the original file.
+    :param old_file: The original file path.
+    """
+    if not new_content:
+        return
     try:
         with NamedTemporaryFile(mode="w", delete=False, encoding="utf-8") as temp_file:
             temp_file.write(new_content)
             temp_file_path = temp_file.name
 
-        # Open the diff in meld for user review, and wait for the user to close the meld window
-        subprocess.run(["meld", file_path, temp_file_path])
-        logging.info(
-            f"Updated file {file_path} with new aliases and marked as processed."
-        )
+        if auto_apply:
+            # Automatically apply the diff to the original file
+            with open(temp_file_path) as file:
+                new_content = file.read()
+                with open(old_file, "w") as file:
+                    file.write(new_content)
+            logging.info(f"Updated file {old_file} with new content without review.")
+            return
+        else:
+            # Open the diff in meld for user review, and wait for the user to close the meld window
+            # when the user saves within meld, the file will be updated.
+            subprocess.run(["meld", old_file, temp_file_path])
+            logging.info(f"User reviewed suggested diff for {old_file}.")
     except Exception as e:
         logging.error(
-            f"An error occurred while updating file {file_path} with new aliases: {e}"
+            f"An error occurred while updating file {old_file} with new content: {e}"
         )
         logging.error("Error trace:", exc_info=True)
