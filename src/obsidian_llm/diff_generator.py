@@ -27,8 +27,8 @@ def generate_diff_and_update(file_path, new_aliases, frontmatter_dict, content):
         return
 
     # Update the aliases in the frontmatter
-    if "aliases" in frontmatter_dict:
-        # Ensure no duplicates are added
+    if "aliases" in frontmatter_dict and isinstance(frontmatter_dict["aliases"], list):
+        # Ensure no duplicates are added to the existing aliases
         unique_new_aliases = [
             alias for alias in new_aliases if alias not in frontmatter_dict["aliases"]
         ]
