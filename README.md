@@ -69,6 +69,16 @@ _Obsidian Llm_ is free and open source software.
 If you encounter any problems,
 please [file an issue] along with a detailed description.
 
+## TODO
+
+* help fill in missing references
+* help link to relevant pages using RAG
+* identify pages which are skeletal and try to flesh them out
+* auto-update tags on pages based on content
+* fix issue where emoticons have double quotes around them
+* add @beartype to all functions and add type hints
+
+
 ## Credits
 
 This project was generated from [@cjolowicz]'s [Hypermodern Python Cookiecutter] template.
