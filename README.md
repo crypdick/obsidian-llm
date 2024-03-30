@@ -21,21 +21,36 @@
 [pre-commit]: https://github.com/pre-commit/pre-commit
 [black]: https://github.com/psf/black
 
+# Obsidian.md Vault Improvement Assistant
+
+This project aims to optimize the organization of markdown files within an Obsidian.md vault by suggesting enhancements for the YAML frontmatter, specifically by proposing additional aliases. Utilizing a CLI interface and leveraging the AutoGPT library, it dynamically generates alias suggestions, thereby improving the user's workflow and the functionality of their Obsidian vault.
+
+## Overview
+
+The application employs a backend-centric architecture within a CLI environment, focusing on direct file-based interactions with the Obsidian vault. It uses Python as the core programming language, supported by libraries like Click for CLI interactions, AutoGPT for intelligent alias suggestion generation, and Meld for diff presentation. The project structure includes key components such as CLI interpreter (`cli.py`), Markdown enumerator (`markdown_enumerator.py`), Frontmatter verifier (`frontmatter_verifier.py`), Alias suggester (`alias_suggester.py`), among others.
+
 ## Features
 
-- TODO
+1. **CLI Interface**: Simplifies the process of executing the utility and passing the Obsidian vault path as a parameter.
+2. **Markdown File Identification**: Automatically identifies `.md` files within the specified Obsidian vault.
+3. **YAML Frontmatter Inspection**: Checks each markdown file for a YAML frontmatter section and evaluates it.
+4. **Alias Proposition**: Utilizes AutoGPT to generate and suggest new aliases based on the document's title.
+5. **Interactive Diff Editing**: Presents suggested aliases to the user via the `meld` diff editor, allowing for interactive approval or modification of suggestions.
 
-## Requirements
+## Getting Started
 
-- TODO
+### Requirements
 
-## Installation
+- Python 3.6 or newer
+- Installation of required packages from `requirements.txt`
 
-You can install _Obsidian Llm_ via [pip] from [PyPI]:
+### Quickstart
 
-```console
-$ pip install obsidian-llm
-```
+1. Clone the repository to your local machine.
+2. Install dependencies using `pip install -r requirements.txt`.
+3. Run `python cli.py --vault_path [your_vault_path]` to start the application.
+
+
 
 ## Usage
 
