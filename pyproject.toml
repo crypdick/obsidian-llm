@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "obsidian-llm"
-version = "0.0.0"
+version = "0.0.1"
 description = "Obsidian Llm"
 authors = ["Richard Decal <public@richarddecal.com>"]
 license = "MIT"
