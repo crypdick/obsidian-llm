@@ -1,15 +1,14 @@
 """Command-line interface."""
 
 import logging
-import os
 
 import click
-from alias_suggester import generate_alias_suggestions
-from diff_generator import generate_diff_and_update
 from dotenv import load_dotenv
-from frontmatter_verifier import parse_frontmatter
-from frontmatter_verifier import verify_frontmatter
-from markdown_enumerator import enumerate_markdown_files
+
+from .alias_suggester import generate_alias_suggestions
+from .diff_generator import generate_diff_and_update
+from .frontmatter_verifier import verify_frontmatter
+from .markdown_enumerator import enumerate_markdown_files
 
 
 # Ensure environment variables are loaded
