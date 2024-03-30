@@ -1,4 +1,5 @@
 """Sphinx configuration."""
+
 project = "Obsidian Llm"
 author = "Richard Decal"
 copyright = "2024, Richard Decal"
