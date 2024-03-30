@@ -20,5 +20,8 @@ update-hooks:
 aliases:
 	poetry run obsidian-llm --task aliases
 
+aliases-test:
+	poetry run obsidian-llm --task aliases --test-vault
+
 bump-patch:
 	poetry version patch
