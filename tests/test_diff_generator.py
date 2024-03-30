@@ -1,9 +1,9 @@
 import logging
 from tempfile import NamedTemporaryFile
 
-from obsidian_llm.diff_generator import generate_diff_and_update
+from obsidian_llm.diff_generator import apply_diff
+from obsidian_llm.diff_generator import get_alias_diff
 from obsidian_llm.frontmatter_verifier import parse_frontmatter
-from obsidian_llm.frontmatter_verifier import verify_frontmatter
 
 
 # set logging level to INFO
@@ -20,16 +20,16 @@ def test_generate_diff_and_update_without_frontmatter():
             tmp_file.write(content)
             tmp_file.seek(0)
 
-        tmp_frontmatter = parse_frontmatter(content)
+        tmp_frontmatter, _asstr = parse_frontmatter(tmp_file.name)
         assert (
             tmp_frontmatter is None
         ), f"Expected no frontmatter, but found: {tmp_frontmatter}"
-        generate_diff_and_update(
+        new_content = get_alias_diff(
             tmp_file.name,
             new_aliases=None,
             frontmatter_dict=tmp_frontmatter,
-            content=content,
         )
+        apply_diff(new_content, tmp_file.name, auto_apply=True)
 
 
 def test_generate_diff_and_update_with_frontmatter_no_alias():
@@ -45,16 +45,16 @@ def test_generate_diff_and_update_with_frontmatter_no_alias():
             # reset pointer
             tmp_file.seek(0)
 
-        tmp_frontmatter, _asstr = verify_frontmatter(tmp_file.name)
-        generate_diff_and_update(
+        tmp_frontmatter, _asstr = parse_frontmatter(tmp_file.name)
+        new_content = get_alias_diff(
             tmp_file.name,
             new_aliases=["alias1", "alias2"],
             frontmatter_dict=tmp_frontmatter,
-            content=content,
         )
+        apply_diff(new_content, tmp_file.name, auto_apply=True)
 
         # new file should have the new aliases in the frontmatter
-        frontmatter, _asstr = verify_frontmatter(tmp_file.name)
+        frontmatter, _asstr = parse_frontmatter(tmp_file.name)
     assert isinstance(
         frontmatter, dict
     ), f"Expected frontmatter, but found: {frontmatter}"
@@ -79,16 +79,16 @@ def test_generate_diff_and_update_with_existing_alias():
             tmp_file.write(content)
             tmp_file.seek(0)
 
-        tmp_frontmatter, _asstr = verify_frontmatter(tmp_file.name)
-        generate_diff_and_update(
+        tmp_frontmatter, _asstr = parse_frontmatter(tmp_file.name)
+        new_content = get_alias_diff(
             tmp_file.name,
             new_aliases=["alias1", "alias2"],
             frontmatter_dict=tmp_frontmatter,
-            content=content,
         )
+        apply_diff(new_content, tmp_file.name, auto_apply=True)
 
         # new file should have the new aliases in the frontmatter
-        frontmatter, _asstr = verify_frontmatter(tmp_file.name)
+        frontmatter, _asstr = parse_frontmatter(tmp_file.name)
     assert isinstance(
         frontmatter, dict
     ), f"Expected frontmatter, but found: {frontmatter}"
@@ -116,16 +116,16 @@ def test_generate_diff_and_update_with_existing_alias_yaml():
             content = original_file.read()
             tmp_file.write(content)
             tmp_file.seek(0)
-        tmp_frontmatter, _asstr = verify_frontmatter(tmp_file.name)
-        generate_diff_and_update(
+        tmp_frontmatter, _asstr = parse_frontmatter(tmp_file.name)
+        new_content = get_alias_diff(
             tmp_file.name,
             new_aliases=["alias1", "alias2"],
             frontmatter_dict=tmp_frontmatter,
-            content=content,
         )
+        apply_diff(new_content, tmp_file.name, auto_apply=True)
 
         # new file should have the new aliases in the frontmatter
-        frontmatter, _asstr = verify_frontmatter(tmp_file.name)
+        frontmatter, _asstr = parse_frontmatter(tmp_file.name)
     assert isinstance(
         frontmatter, dict
     ), f"Expected frontmatter, but found: {frontmatter}"

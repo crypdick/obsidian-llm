@@ -4,7 +4,7 @@ import re
 import yaml
 
 
-def verify_frontmatter(file_path):
+def parse_frontmatter(file_path):
     """
     Verifies if the given markdown file contains a YAML frontmatter block.
 
@@ -30,17 +30,3 @@ def verify_frontmatter(file_path):
             "An error occurred while verifying frontmatter: %s", e, exc_info=True
         )
         return None, None
-
-
-def parse_frontmatter(frontmatter_section: str) -> dict:
-    """Given a YAML frontmatter section from verify_frontmatter, parse it into a dictionary."""
-
-    try:
-        frontmatter_dict = yaml.safe_load(frontmatter_section)
-        logging.info("Parsed frontmatter successfully: %s", frontmatter_dict)
-        return frontmatter_dict
-    except Exception as e:
-        logging.error(
-            "An error occurred while parsing frontmatter: %s", e, exc_info=True
-        )
-        return {}
