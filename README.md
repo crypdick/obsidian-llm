@@ -50,8 +50,6 @@ The application employs a backend-centric architecture within a CLI environment,
 2. Install dependencies using `pip install -r requirements.txt`.
 3. Run `python cli.py --vault_path [your_vault_path]` to start the application.
 
-
-
 ## Usage
 
 Please see the [Command-line Reference] for details.

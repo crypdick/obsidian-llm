@@ -14,7 +14,7 @@ def verify_frontmatter(file_path):
     frontmatter_pattern = re.compile(r"^---\s*\n(.*?\n)---\s*\n", re.DOTALL)
 
     try:
-        with open(file_path, "r", encoding="utf-8") as file:
+        with open(file_path, encoding="utf-8") as file:
             content = file.read()
             match = frontmatter_pattern.search(content)
             if match:

@@ -40,7 +40,7 @@ def main(vault_path) -> None:
     for file_path in md_files:
         try:
             content = ""
-            with open(file_path, "r", encoding="utf-8") as file:
+            with open(file_path, encoding="utf-8") as file:
                 content = file.read()
             frontmatter_dict, frontmatter_str = verify_frontmatter(file_path)
             if frontmatter_dict:
