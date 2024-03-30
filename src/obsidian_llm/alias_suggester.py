@@ -12,10 +12,39 @@ from .markdown_enumerator import enumerate_markdown_files
 
 load_dotenv()  # Load environment variables from .env file
 
+prefix_blacklist = [
+    "(POST) ",
+    "(ARTICLE) ",
+    "(REVIEW) ",
+    "(VIDEO) ",
+    "(PODCAST) ",
+    "(RECIPE) ",
+    "(BOOK) ",
+    "(MOVIE) ",
+    "(PILLAR) ",
+    "(VISION) ",
+    "(PAPER) ",
+    "(PROMPT) ",
+    "@",
+]
+
+substring_blacklist = ["/Journal/", "/Templates/"]
+
 
 def generate_all_aliases(vault_path: str):
     md_files = enumerate_markdown_files(vault_path)
     for file_path in md_files:
+        # do not attempt to add aliases to files in blacklisted directories
+        if any(substring in file_path for substring in substring_blacklist):
+            logging.info(f"Skipping blacklisted file: {file_path}")
+            continue
+        # parse fpath stem as document title
+        document_title = os.path.splitext(os.path.basename(file_path))[0]
+        # check if document title is blacklisted
+        if any(prefix in document_title.upper() for prefix in prefix_blacklist):
+            logging.info(f"Skipping blacklisted file: {file_path}")
+            continue
+
         try:
             content = ""
             with open(file_path, encoding="utf-8") as file:
@@ -28,24 +57,19 @@ def generate_all_aliases(vault_path: str):
                 ):
                     logging.info(f"Skipping already processed file: {file_path}")
                     continue
-                # parse fpath stem as document title
-                document_title = os.path.splitext(os.path.basename(file_path))[0]
+
                 existing_aliases = frontmatter_dict.get("aliases", [])
                 new_aliases = generate_alias_suggestions(
                     document_title, existing_aliases
                 )
-                if new_aliases:
-                    if "processed_for" not in frontmatter_dict:
-                        frontmatter_dict["processed_for"] = []
-                    frontmatter_dict["processed_for"].append("new_aliases")
-                    generate_diff_and_update(
-                        file_path, new_aliases, frontmatter_dict, content
-                    )
-                    logging.info(
-                        f"Diff generated and user decision processed for {file_path}."
-                    )
-                else:
-                    logging.info(f"No new aliases suggested for {file_path}. Skipping.")
+
+                generate_diff_and_update(
+                    file_path, new_aliases, frontmatter_dict, content
+                )
+                logging.info(
+                    f"Diff generated and user decision processed for {file_path}."
+                )
+
             else:
                 continue
         except Exception as e:
