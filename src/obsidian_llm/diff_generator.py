@@ -7,7 +7,7 @@ from beartype import beartype
 
 from obsidian_llm.io import read_md
 
-from .frontmatter_verifier import parse_frontmatter
+from .io import parse_frontmatter
 
 
 def get_alias_diff(file_path, new_aliases, frontmatter_dict: dict | None):

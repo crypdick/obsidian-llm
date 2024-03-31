@@ -3,7 +3,7 @@ from tempfile import NamedTemporaryFile
 
 from obsidian_llm.diff_generator import apply_diff
 from obsidian_llm.diff_generator import get_alias_diff
-from obsidian_llm.frontmatter_verifier import parse_frontmatter
+from obsidian_llm.io import parse_frontmatter
 
 
 # set logging level to INFO
