@@ -88,3 +88,24 @@ def list_files_with_tag(vault_path: str, tag: str) -> list:
             elif isinstance(tags, str) and tag == tags:
                 tagged_files.append(file_path)
     return tagged_files
+import re
+
+def count_links_in_file(file_path: str) -> int:
+    """
+    Counts the number of [[WikiLinks]] in the body of a markdown file, excluding the frontmatter.
+
+    :param file_path: Path to the markdown file.
+    :return: The number of [[WikiLinks]] found in the file.
+    """
+    # Read the content of the file
+    content = read_md(file_path)
+    # Remove the frontmatter if it exists
+    _, frontmatter_str = parse_frontmatter(file_path)
+    if frontmatter_str:
+        content = content.replace(frontmatter_str, '', 1)
+    # Define the pattern to match [[WikiLinks]]
+    wikilink_pattern = re.compile(r'\[\[(.*?)\]\]')
+    # Find all matches of the pattern
+    links = wikilink_pattern.findall(content)
+    # Return the number of links found
+    return len(links)
