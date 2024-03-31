@@ -67,3 +67,22 @@ def parse_frontmatter(file_path):
             "An error occurred while verifying frontmatter: %s", e, exc_info=True
         )
         return None, None
+def list_files_with_tag(vault_path: str, tag: str) -> list:
+    """
+    Lists all markdown files within the given Obsidian vault directory that contain the specified tag in their YAML frontmatter.
+
+    :param vault_path: Path to the Obsidian vault directory.
+    :param tag: The tag to search for in the frontmatter.
+    :return: List of paths to markdown files that contain the specified tag.
+    """
+    tagged_files = []
+    md_files = enumerate_markdown_files(vault_path)
+    for file_path in md_files:
+        frontmatter_dict, _ = parse_frontmatter(file_path)
+        if frontmatter_dict and 'tags' in frontmatter_dict:
+            tags = frontmatter_dict['tags']
+            if isinstance(tags, list) and tag in tags:
+                tagged_files.append(file_path)
+            elif isinstance(tags, str) and tag == tags:
+                tagged_files.append(file_path)
+    return tagged_files
