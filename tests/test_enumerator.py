@@ -1,6 +1,6 @@
 import logging
 
-from obsidian_llm.markdown_enumerator import enumerate_markdown_files
+from obsidian_llm.io import enumerate_markdown_files
 
 
 def test_enumerate_markdown_files(vault_path):

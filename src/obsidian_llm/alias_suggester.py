@@ -7,8 +7,8 @@ from openai import OpenAI
 
 from .diff_generator import apply_diff
 from .diff_generator import get_alias_diff
-from .frontmatter_verifier import parse_frontmatter
-from .markdown_enumerator import enumerate_markdown_files
+from .io import parse_frontmatter
+from .io import enumerate_markdown_files
 
 
 load_dotenv()  # Load environment variables from .env file
