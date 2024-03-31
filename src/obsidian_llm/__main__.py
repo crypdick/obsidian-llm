@@ -23,7 +23,7 @@ load_dotenv()
 )
 @click.option(
     "--task",
-    type=click.Choice(["aliases"]),
+    type=click.Choice(["aliases", "bump-note-status", "bump-journal-status"]),
     default="aliases",
 )
 @click.option("--test-vault", is_flag=True, help="Run tests.")
