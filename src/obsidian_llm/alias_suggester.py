@@ -5,6 +5,8 @@ import re
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from obsidian_llm.llm import get_oai_client
+
 from .diff_generator import apply_diff
 from .diff_generator import get_alias_diff
 from .io import enumerate_markdown_files
@@ -92,12 +94,9 @@ def generate_alias_suggestions(document_title: str, existing_aliases=None):
 
     assert document_title != "", "Document title cannot be empty."
 
+    client = get_oai_client()
+
     try:
-        # Load your OpenAI API key from an environment variable
-        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        if not client.api_key:
-            logging.error("OPENAI_API_KEY environment variable is not set.")
-            return None
 
         # Construct the prompt for AutoGPT
         prompt = """You are an assistant helping a user generate alias or redirect suggestions for a document title. Reasons for creating alias redirects include:
