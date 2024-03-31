@@ -23,19 +23,20 @@
 
 # Obsidian.md Vault Improvement Assistant
 
-This project aims to optimize the organization of markdown files within an Obsidian.md vault by suggesting enhancements for the YAML frontmatter, specifically by proposing additional aliases. Utilizing a CLI interface and leveraging the AutoGPT library, it dynamically generates alias suggestions, thereby improving the user's workflow and the functionality of their Obsidian vault.
-
-## Overview
-
-The application employs a backend-centric architecture within a CLI environment, focusing on direct file-based interactions with the Obsidian vault. It uses Python as the core programming language, supported by libraries like Click for CLI interactions, AutoGPT for intelligent alias suggestion generation, and Meld for diff presentation. The project structure includes key components such as CLI interpreter (`cli.py`), Markdown enumerator (`markdown_enumerator.py`), Frontmatter verifier (`frontmatter_verifier.py`), Alias suggester (`alias_suggester.py`), among others.
+This project aims to automate maintainence of the markdown files within an Obsidian.md vault. 
 
 ## Features
 
-1. **CLI Interface**: Simplifies the process of executing the utility and passing the Obsidian vault path as a parameter.
-2. **Markdown File Identification**: Automatically identifies `.md` files within the specified Obsidian vault.
-3. **YAML Frontmatter Inspection**: Checks each markdown file for a YAML frontmatter section and evaluates it.
-4. **Alias Proposition**: Utilizes AutoGPT to generate and suggest new aliases based on the document's title.
-5. **Interactive Diff Editing**: Presents suggested aliases to the user via the `meld` diff editor, allowing for interactive approval or modification of suggestions.
+- **Filling Missing Aliases**: suggests missing aliases within the YAML frontmatter
+- (planned feature) **Bumping Note Status**: scans all notes currently tagged as stubs (`📥️/🟥️`) and decide whether to bump its status. In particular, we count the number of links in the body of the note and suggest a status based on that. Note status are as follows:
+  - `📥️/🟥️`: *Stub*. 0 links.
+  - `📥️/🟧️`: *Processing*. 1-4 links.
+  - `📥️/🟩️`: *Evergreen*. 5+ links.
+- (planned feature) **Bumping Journal Status**: scans all journal notes tagged as incomplete (`📓/🟥️`) and decides whether to bump its status. In particular, we use ChatGPT to decide whether there are any action items in the note. If there are, it will prompt the user to capture them into a task manager (manual step). When the user indicates they have finished capturing the tasks, the 
+  - `📓/🟨`: *Captured*. The note contained action items, and the user has finished capturing them into a task manager.
+  - `📓/🟩️`: *Processed*. The note contained no action items, and does not need to be processed further.
+
+All edits are presented to the user in a `meld` diff editor, allowing for interactive approval or modification of suggestions.
 
 ## Getting Started
 
@@ -49,7 +50,10 @@ The application employs a backend-centric architecture within a CLI environment,
 1. Clone the repository to your local machine.
 2. Install dependencies using `poetry install`.
 3. (Optional) Create a `.env` file in the root directory using `sample.env` as a template.
-4. Run `python cli.py --task <task type>` to start the application.
+4. Run `poetry run obsidian-llm --task <task type>` to start the application. Task types include:
+   - `aliases`: suggest missing aliases within the YAML frontmatter
+   - `bump-note-status`: suggest bumping of a note's status based on the content
+   - `bump-journal-status`: suggest bumping of a journal's status based on the content
 
 ## Usage
 
