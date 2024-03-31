@@ -41,14 +41,15 @@ The application employs a backend-centric architecture within a CLI environment,
 
 ### Requirements
 
-- Python 3.6 or newer
-- Installation of required packages from `requirements.txt`
+- Python 3.11
+- Installation of required packages from `poetry.lock` file
 
 ### Quickstart
 
 1. Clone the repository to your local machine.
-2. Install dependencies using `pip install -r requirements.txt`.
-3. Run `python cli.py --vault_path [your_vault_path]` to start the application.
+2. Install dependencies using `poetry install`.
+3. (Optional) Create a `.env` file in the root directory using `sample.env` as a template.
+4. Run `python cli.py --task <task type>` to start the application.
 
 ## Usage
 
@@ -77,6 +78,7 @@ please [file an issue] along with a detailed description.
 - auto-update tags on pages based on content
 - fix issue where emoticons have double quotes around them
 - add @beartype to all functions and add type hints
+- consolidate all prompts into prompts/ folder
 
 ## Credits
 
