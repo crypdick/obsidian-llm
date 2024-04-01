@@ -33,6 +33,7 @@ load_dotenv()
             "bump-journal-status",
             "merge-syncthing-conflicts",
             "linkify",
+            "spell-check-titles",
         ]
     ),
     default="aliases",
@@ -65,6 +66,9 @@ def main(vault_path, task, test_vault) -> None:
     elif task == "linkify":
         logging.info("Linkifying notes")
         linkify_all_notes(vault_path)
+   elif task == "spell-check-titles":
+       logging.info("Spell checking titles")
+       spell_check_titles(vault_path)
     else:
         logging.error(f"Invalid task: {task}. Please provide a valid task.")
         return
