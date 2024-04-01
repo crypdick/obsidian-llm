@@ -6,6 +6,7 @@ from obsidian_llm.diff_generator import apply_diff
 from obsidian_llm.io import enumerate_markdown_files
 from obsidian_llm.io import parse_frontmatter
 from obsidian_llm.io import read_md
+from obsidian_llm.llm import get_oai_client
 
 
 def linkify_all_notes(vault_path):
@@ -31,6 +32,24 @@ def linkify_all_notes(vault_path):
 
         new_content = suggest_links_llm(content)
         new_content = frontmatter_str + new_content
+
+def suggest_links_llm(content: str) -> str:
+    """
+    Suggests new WikiLinks for the given content using an LLM.
+
+    :param content: The content of a markdown file.
+    :return: The content with suggested WikiLinks.
+    """
+    client = get_oai_client()
+    response = client.create_completion(
+        prompt=f"Suggest links for the following content:\n{content}",
+        max_tokens=1024,
+        n=1,
+        stop=None,
+        temperature=0.7
+    )
+    suggestion = response.choices[0].text.strip()
+    return suggestion
 
         if new_content != original_content:
             logging.info(f"Changes detected in {file_path}.")
