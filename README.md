@@ -56,8 +56,20 @@ All edits are presented to the user in a `meld` diff editor, allowing for intera
    - `bump-note-status`: suggest bumping of a note's status based on the content
    - `bump-journal-status`: suggest bumping of a journal's status based on the content
    - `spell-check-titles`: spell check all note titles
+   - `linkify`: suggests missing wikilinks in the body of each note
 
 ## Usage
+
+When running the steps, it is recommended to close Obsidian to prevent conflicts with the vault. This can happen
+if the vault is open and Obsidian is updating the `modified` timestamp of the files. 
+
+The exception is when running the `spell-check-titles` task, as this does not modify the files. Files should be renamed manually in Obsidian so that it propagates the updates to wikilinks.
+
+## Recommended workflow
+1) Correct title spelling errors first, or else future LLM calls may hallucinate the correct spellings
+2) Adding aliases helps with later linking steps.
+3) Linkify now that aliases are added and titles are corrected.
+4) Bump note status now that links are added.
 
 Please see the [Command-line Reference] for details.
 
