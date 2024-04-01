@@ -33,7 +33,7 @@ This project aims to automate maintenance of an Obsidian.md vault created from B
   - `📝/🟥️`: _Stub_. 0 links.
   - `📝/🟧️`: _Processing_. 1-4 links.
   - `📝/🟩️`: _Evergreen_. 5+ links.
-- (planned feature) **Bumping Journal Status**: scans all journal notes tagged as incomplete (`📓/🟥️`) and decides whether to bump its status. In particular, we use ChatGPT to decide whether there are any action items in the journal. If there are, it will prompt the user to capture them into a task manager (manual step). When the user indicates they have finished capturing the tasks, the job continues. If ChatGPT finds no action items, the journal status is bumped without user interaction. 
+- (planned feature) **Bumping Journal Status**: scans all journal notes tagged as incomplete (`📓/🟥️`) and decides whether to bump its status. In particular, we use ChatGPT to decide whether there are any action items in the journal. If there are, it will prompt the user to capture them into a task manager (manual step). When the user indicates they have finished capturing the tasks, the job continues. If ChatGPT finds no action items, the journal status is bumped without user interaction.
   - `📓/🟨`: _Captured_. The note contained action items, and the user has finished capturing them into a task manager.
   - `📓/🟩️`: _Processed_. The note contained no action items, and does not need to be processed further.
 
@@ -62,17 +62,18 @@ All edits are presented to the user in a `meld` diff editor, allowing for intera
 ## Usage
 
 When running the steps, it is recommended to close Obsidian to prevent conflicts with the vault. This can happen
-if the vault is open and Obsidian is updating the `modified` timestamp of the files. 
+if the vault is open and Obsidian is updating the `modified` timestamp of the files.
 
 The exception is when running the `spell-check-titles` task, as this does not modify the files. Files should be renamed manually in Obsidian so that it propagates the updates to wikilinks.
 
 ## Recommended workflow
-1) Merge Syncthing file conflicts
-2) Bump journal status
-3) Correct title spelling errors, or else future LLM calls may hallucinate the correct spellings
-4) Adding aliases helps with later linking steps.
-5) Linkify now that aliases are added and titles are corrected.
-6) Bump note status now that links are added.
+
+1. Merge Syncthing file conflicts
+2. Bump journal status
+3. Correct title spelling errors, or else future LLM calls may hallucinate the correct spellings
+4. Adding aliases helps with later linking steps.
+5. Linkify now that aliases are added and titles are corrected.
+6. Bump note status now that links are added.
 
 Please see the [Command-line Reference] for details.
 

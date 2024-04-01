@@ -1,6 +1,8 @@
+import logging
 from tempfile import NamedTemporaryFile
 
 from obsidian_llm.io import count_links_in_file
+from obsidian_llm.io import enumerate_markdown_files
 
 
 def test_count_links_in_file():
@@ -25,3 +27,12 @@ def test_count_links_in_file():
         # Count the links in the temporary file
         link_count = count_links_in_file(tmp.name)
         assert link_count == 0, "The link count should be 0."
+
+
+def test_enumerate_markdown_files(vault_path):
+    try:
+        md_files = enumerate_markdown_files(vault_path)
+        logging.info(f"Markdown files enumerated successfully: {md_files}")
+    except Exception as e:
+        logging.error("An error occurred while enumerating markdown files.")
+        logging.error("Error trace:", exc_info=True)
