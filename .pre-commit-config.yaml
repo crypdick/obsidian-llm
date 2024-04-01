@@ -40,6 +40,7 @@ repos:
         types: [python]
         require_serial: true
         args: [--darglint-ignore-regex, .*]
+        exclude: tests
       - id: isort
         name: isort
         entry: isort

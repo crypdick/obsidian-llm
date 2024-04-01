@@ -62,7 +62,6 @@ def process_journal_entry(file_path):
     if action_items.strip().lower() == "none":
         new_status = processed_tag
     else:
-        new_status = captured_tag
         # report to the user the identified action items and wait for confirmation
         # make the report pretty
         action_items = action_items.split("\n")
@@ -71,11 +70,13 @@ def process_journal_entry(file_path):
         if click.confirm(
             "Please add the action items to your task tracker. Hit enter to continue. Use Keyboard Interrupt to stop the process."
         ):
-            new_status = processed_tag
+            new_status = captured_tag
 
     # Update the status of the journal file
     frontmatter_dict, frontmatter_str = parse_frontmatter(file_path)
-    assert frontmatter_dict is not None
+    assert (
+        frontmatter_dict is not None
+    ), f"Something went wrong. {file_path} has no frontmatter yet it is tagged?"
     if isinstance(frontmatter_dict["tags"], str):
         frontmatter_dict["tags"] = [frontmatter_dict["tags"]]
     frontmatter_dict["tags"].remove(incomplete_tag)
@@ -83,3 +84,5 @@ def process_journal_entry(file_path):
     # note: no need to add processed_for key, since the status is already updated
     new_content = apply_new_frontmatter(frontmatter_dict, file_path)
     apply_diff(new_content=new_content, old_file=file_path, auto_apply=True)
+
+    return new_status

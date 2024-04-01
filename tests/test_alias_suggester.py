@@ -18,12 +18,11 @@ def test_generate_alias_suggestions_no_api_key(mock_getenv):
         generate_alias_suggestions("test title")
 
 
-@patch("obsidian_llm.llm.os.getenv")
-@patch("obsidian_llm.llm.OpenAI")
+@patch("obsidian_llm.alias_suggester.get_oai_client")
 def test_generate_alias_suggestions_with_existing_aliases_and_new_suggestions(
-    mock_openai, mock_getenv
+    mock_openai, monkeypatch
 ):
-    mock_getenv.return_value = "test_api_key"
+    monkeypatch.setenv("OPENAI_API_KEY", "test_api_key")
     mock_openai_instance = MagicMock()
     mock_openai.return_value = mock_openai_instance
     mock_openai_instance.chat.completions.create.return_value = MagicMock(
@@ -35,29 +34,33 @@ def test_generate_alias_suggestions_with_existing_aliases_and_new_suggestions(
     assert result == ["alias3", "alias4"]
 
 
-@patch("obsidian_llm.llm.os.getenv")
-@patch("obsidian_llm.llm.OpenAI")
+@patch("obsidian_llm.alias_suggester.get_oai_client")
 def test_generate_alias_suggestions_with_existing_aliases_and_no_new_suggestions(
-    mock_openai, mock_getenv
+    mock_openai,
+    monkeypatch,
 ):
-    mock_getenv.return_value = "test_api_key"
+    monkeypatch.setenv("OPENAI_API_KEY", "test_api_key")
     mock_openai_instance = MagicMock()
     mock_openai.return_value = mock_openai_instance
+
     mock_openai_instance.chat.completions.create.return_value = MagicMock(
         choices=[MagicMock(message=MagicMock(content="alias1\nalias2"))]
     )
+
+    # replace OpenAI using monkeypatch
+    # monkeypatch.setattr("obsidian_llm.llm.OpenAI", MagicMock())
+
     result = generate_alias_suggestions(
         "test title", existing_aliases=["alias1", "alias2"]
     )
     assert result is None
 
 
-@patch("obsidian_llm.llm.os.getenv")
-@patch("obsidian_llm.llm.OpenAI")
+@patch("obsidian_llm.alias_suggester.get_oai_client")
 def test_generate_alias_suggestions_with_existing_aliases_and_none_suggestions(
-    mock_openai, mock_getenv
+    mock_openai, monkeypatch
 ):
-    mock_getenv.return_value = "test_api_key"
+    monkeypatch.setenv("OPENAI_API_KEY", "test_api_key")
     mock_openai_instance = MagicMock()
     mock_openai.return_value = mock_openai_instance
     mock_openai_instance.chat.completions.create.return_value = MagicMock(
@@ -67,21 +70,3 @@ def test_generate_alias_suggestions_with_existing_aliases_and_none_suggestions(
         "test title", existing_aliases=["alias1", "alias2"]
     )
     assert result is None
-import pytest
-
-from obsidian_llm.alias_suggester import generate_all_aliases
-from obsidian_llm.alias_suggester import generate_alias_suggestions
-
-# TODO: Implement test cases for generate_all_aliases function
-def test_generate_all_aliases():
-    # Setup test environment
-    # Call generate_all_aliases
-    # Assert expected outcomes
-    pass
-
-# TODO: Implement test cases for generate_alias_suggestions function
-def test_generate_alias_suggestions():
-    # Setup test environment
-    # Call generate_alias_suggestions
-    # Assert expected outcomes
-    pass

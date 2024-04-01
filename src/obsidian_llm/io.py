@@ -174,7 +174,7 @@ def split_content(content: str, skip_processed_for_tags: str | None = None) -> t
                 tag in frontmatter_dict["processed_for"]
                 for tag in skip_processed_for_tags
             ):
-                logging.info(f"Skipping already processed file.")
+                logging.info("Skipping already processed file.")
                 return [], []
 
         save_chunk(frontmatter_str, send=False)
