@@ -33,3 +33,5 @@ merge-syncthing-conflicts:
 
 linkify:
 	poetry run obsidian-llm --task linkify
+spell-check-titles:
+	poetry run obsidian-llm --task spell-check-titles
