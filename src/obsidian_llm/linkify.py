@@ -40,7 +40,7 @@ def linkify_all_notes(vault_path):
         # Process chunks to send through the LLM
         processed_chunks = [suggest_links_llm(chunk) for chunk in chunks_to_send]
         # Splice the processed chunks and the chunks to keep back together
-        new_content = splice_content(processed_chunks, chunks_to_keep)
+        new_content = splice_content(chunks_to_send, chunks_to_keep, processed_chunks)
         new_content = frontmatter_str + new_content
         # check if the content ends with a newline, and if not, add one
         if not new_content.endswith("\n"):
@@ -103,7 +103,7 @@ def split_content(content: str) -> tuple:
     return chunks_to_send, chunks_to_keep
 
 
-def splice_content(processed_chunks: list, chunks_to_keep: list) -> str:
+def splice_content(chunks_to_send: list, chunks_to_keep: list, processed_chunks: list) -> str:
     """
     Splices the processed chunks and the chunks to keep back together.
 
@@ -121,4 +121,18 @@ def splice_content(processed_chunks: list, chunks_to_keep: list) -> str:
         if send_index < len(processed_chunks):
             content += processed_chunks[send_index] + "\n"
             send_index += 1
+    return content.strip("\n")
+    # Create an iterator for the processed chunks
+    processed_chunks_iter = iter(processed_chunks)
+    content = ""
+    for original_chunk in chunks_to_send:
+        # If the original chunk was meant to be processed, replace it with the processed chunk
+        if original_chunk in chunks_to_send:
+            content += next(processed_chunks_iter) + "\n"
+        # If the original chunk was meant to be kept, keep it as is
+        else:
+            content += original_chunk + "\n"
+    # Ensure that any remaining chunks to keep are added to the content
+    for chunk in chunks_to_keep:
+        content += chunk + "\n"
     return content.strip("\n")
