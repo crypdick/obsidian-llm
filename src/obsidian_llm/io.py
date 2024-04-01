@@ -20,6 +20,7 @@ def enumerate_markdown_files(vault_path):
     :param vault_path: Path to the Obsidian vault directory.
     :return: List of paths to markdown files found within the vault.
     """
+    banned_dirs = [".obsidian/", "venv/", "Templates/"]
     try:
         # Construct the search pattern to match `.md` files
         search_pattern = os.path.join(vault_path, "**", "*.md")
@@ -29,7 +30,7 @@ def enumerate_markdown_files(vault_path):
         md_files = [
             file
             for file in md_files
-            if ".obsidian/" not in file and "venv/" not in file
+            if not any(banned_dir in file for banned_dir in banned_dirs)
         ]
         logging.info(
             f"Found {len(md_files)} markdown files in the vault at {vault_path}"
@@ -101,10 +102,10 @@ def list_files_with_tag(vault_path: str, tag: str) -> list:
 
 def count_links_in_file(file_path: str) -> int:
     """
-    Counts the number of [[WikiLinks]] in the body of a markdown file, excluding the frontmatter.
+    Counts the number of [[wikilinks]] in the body of a markdown file, excluding the frontmatter.
 
     :param file_path: Path to the markdown file.
-    :return: The number of [[WikiLinks]] found in the file.
+    :return: The number of [[wikilinks]] found in the file.
     """
     # Read the content of the file
     content = read_md(file_path)
@@ -112,7 +113,7 @@ def count_links_in_file(file_path: str) -> int:
     _, frontmatter_str = parse_frontmatter(file_path)
     if frontmatter_str:
         content = content.replace(frontmatter_str, "", 1)
-    # Define the pattern to match [[WikiLinks]]
+    # Define the pattern to match [[wikilinks]]
     wikilink_pattern = re.compile(r"\[\[(.*?)\]\]")
     # Find all matches of the pattern
     links = wikilink_pattern.findall(content)

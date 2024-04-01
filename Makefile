@@ -30,3 +30,6 @@ bump-patch:
 
 merge-syncthing-conflicts:
 	poetry run obsidian-llm --task merge-syncthing-conflicts
+
+linkify:
+	poetry run obsidian-llm --task linkify

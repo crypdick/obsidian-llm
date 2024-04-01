@@ -118,5 +118,6 @@ def apply_diff(new_content: str | None, old_file, auto_apply: bool = False):
 def run_meld(old_file, new_file):
     # Open the diff in meld for user review, and wait for the user to close the meld window
     # when the user saves within meld, the file will be updated.
+    logging.info(f"Running: `meld {old_file} {new_file}`")
     subprocess.run(["meld", old_file, new_file])
     logging.info(f"User reviewed suggested diff for {old_file}.")

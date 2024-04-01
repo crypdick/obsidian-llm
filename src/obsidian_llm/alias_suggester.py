@@ -3,9 +3,9 @@ import os
 import re
 
 from dotenv import load_dotenv
-from openai import OpenAI
 
 from obsidian_llm.llm import get_oai_client
+from obsidian_llm.llm import query_llm
 
 from .diff_generator import apply_diff
 from .diff_generator import get_alias_diff
@@ -94,7 +94,7 @@ def generate_alias_suggestions(document_title: str, existing_aliases=None):
 
     assert document_title != "", "Document title cannot be empty."
 
-    client = get_oai_client()
+    client = get_oai_client()  # FIXME reuse client across calls
 
     try:
 
@@ -118,22 +118,8 @@ def generate_alias_suggestions(document_title: str, existing_aliases=None):
         task = f"Generate alias suggestions for the document title '{document_title}'"
         if existing_aliases:
             task += f", excluding the following existing aliases: {', '.join(existing_aliases)}"
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": prompt},
-                {
-                    "role": "user",
-                    "content": task,
-                },
-            ],
-            max_tokens=50,
-            n=1,
-            stop=None,
-            temperature=0.5,
-        )
+        suggestions = query_llm(prompt, task, client=client)
 
-        suggestions = response.choices[0].message.content.strip()
         if suggestions.lower() == "none":
             # Short-circuit if no suggestions are generated
             logging.info(f"LLM suggested no new aliases for '{document_title}'.")
