@@ -24,6 +24,7 @@ pydotenv = "^0.0.7"
 openai = "^1.14.3"
 pyyaml = "^6.0.1"
 beartype = "^0.17.2"
+pyspellchecker = "^0.8.1"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"

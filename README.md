@@ -55,6 +55,7 @@ All edits are presented to the user in a `meld` diff editor, allowing for intera
    - `aliases`: suggest missing aliases within the YAML frontmatter
    - `bump-note-status`: suggest bumping of a note's status based on the content
    - `bump-journal-status`: suggest bumping of a journal's status based on the content
+   - `spell-check-titles`: spell check all note titles
 
 ## Usage
 
