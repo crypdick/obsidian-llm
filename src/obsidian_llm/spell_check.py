@@ -28,12 +28,15 @@ def spell_check_titles(vault_path: str) -> None:
         words = title.split()
         # Find those words that may be misspelled
         misspelled = spell.unknown(words)
-        if misspelled:
-            report[file_path] = list(misspelled)
+        corrections = {word: spell.correction(word) for word in misspelled}
+        if corrections:
+            report[file_path] = corrections
 
-    if report:
-        logging.info("Spell check report for titles:")
-        for file_path, misspellings in report.items():
-            logging.info(f"{file_path}: {', '.join(misspellings)}")
+    # Format and output the report
+    if len(report) > 0:
+        logging.info("Spell check report for titles:\n")
+        for file_path, corrections in report.items():
+            corrections_str = ', '.join([f"{mispelled} --> {corrected}" for mispelled, corrected in corrections.items()])
+            logging.info(f"{file_path}:\n  {corrections_str}\n")
     else:
         logging.info("No misspellings found in titles.")
