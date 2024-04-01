@@ -7,11 +7,11 @@ import click
 from dotenv import load_dotenv
 
 from obsidian_llm.alias_suggester import generate_all_aliases
+from obsidian_llm.bump_journal_status import bump_journal_status
 from obsidian_llm.bump_note_status import bump_all_note_status
 from obsidian_llm.linkify import linkify_all_notes
 from obsidian_llm.spell_check import spell_check_titles
 from obsidian_llm.syncthing_conflicts import merge_syncthing_conflicts
-from obsidian_llm.bump_journal_status import bump_journal_status
 
 
 logging.basicConfig(level=logging.INFO)
@@ -36,7 +36,6 @@ load_dotenv()
             "merge-syncthing-conflicts",
             "linkify",
             "spell-check-titles",
-            "bump-journal-status",
         ]
     ),
     default="aliases",
