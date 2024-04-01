@@ -7,9 +7,10 @@ import click
 from dotenv import load_dotenv
 
 from obsidian_llm.alias_suggester import generate_all_aliases
+from obsidian_llm.bump_note_status import bump_all_note_status
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 # load configuration from .env file
 load_dotenv()
@@ -43,7 +44,11 @@ def main(vault_path, task, test_vault) -> None:
             return
 
     if task == "aliases":
+        logging.info("Generating aliases")
         generate_all_aliases(vault_path)
+    elif task == "bump-note-status":
+        logging.info("Bumping note status")
+        bump_all_note_status(vault_path)
     else:
         logging.error(f"Invalid task: {task}. Please provide a valid task.")
         return

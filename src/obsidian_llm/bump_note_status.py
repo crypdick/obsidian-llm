@@ -1,8 +1,13 @@
+import logging
+
+from obsidian_llm.diff_generator import apply_diff
+from obsidian_llm.diff_generator import apply_new_frontmatter
 from obsidian_llm.io import count_links_in_file
 from obsidian_llm.io import list_files_with_tag
+from obsidian_llm.io import parse_frontmatter
 
 
-def bump_note_status(vault_path: str) -> None:
+def bump_all_note_status(vault_path: str) -> None:
     """scans all notes currently tagged as stubs (`📝/🟥️`) and decide whether to bump its status.
 
     In particular, we count the number of links in the body of the note and suggest a status based on that. Note status are as follows:
@@ -10,18 +15,27 @@ def bump_note_status(vault_path: str) -> None:
     - `📝/🟧️`: *Processing*. 1-4 links.
     - `📝/🟩️`: *Evergreen*. 5+ links.
     """
-    # Define the status tags
-    status_tags = {"📝/🟥️": "Stub", "📝/🟧️": "Processing", "📝/🟩️": "Evergreen"}
-    stubs = list_files_with_tag(vault_path, "📝")
-    stubs.extend(list_files_with_tag(vault_path, "📝/🟥️"))
+    status_tags = {
+        "Stub": "📝/🟥",
+        "Processing": "📝/🟧️",
+        "Evergreen": "📝📝��🟩",
+        "Malformed": "📝",
+    }
+    stubs = list_files_with_tag(vault_path, status_tags["Malformed"])
+    stubs.extend(list_files_with_tag(vault_path, status_tags["Stub"]))
 
+    num_changed = 0
     for file_path in stubs:
         num_links = count_links_in_file(file_path)
-        bump_note_status_for_file(file_path, num_links, status_tags)
-from obsidian_llm.io import parse_frontmatter, read_md
-import yaml
+        updated = bump_note_status_for_file(file_path, num_links, status_tags)
+        num_changed += updated
 
-def bump_note_status_for_file(file_path: str, num_links: int, status_tags: dict) -> None:
+    logging.info(f"Bumped status for {num_changed} notes of {len(stubs)} stubs.")
+
+
+def bump_note_status_for_file(
+    file_path: str, num_links: int, status_tags: dict
+) -> int:
     """
     Updates the status of a note based on the number of links it contains.
 
@@ -31,41 +45,37 @@ def bump_note_status_for_file(file_path: str, num_links: int, status_tags: dict)
     """
     # Determine the new status based on the number of links
     if num_links == 0:
-        new_status = "📝/🟥️"  # Stub
+        logging.info(f"Not updating status for {file_path}: no links found.")
+        return 0
     elif 1 <= num_links <= 4:
-        new_status = "📝/🟧️"  # Processing
+        new_status = status_tags["Processing"]
     else:
-        new_status = "📝/🟩️"  # Evergreen
+        new_status = status_tags["Evergreen"]
 
     # Read the current frontmatter
     frontmatter_dict, frontmatter_str = parse_frontmatter(file_path)
-    if frontmatter_dict is None:
-        frontmatter_dict = {}
+    assert frontmatter_dict is not None
 
     # Update the tags in the frontmatter
-    if 'tags' in frontmatter_dict:
-        if isinstance(frontmatter_dict['tags'], list):
-            # Remove old status tags and add the new status
-            frontmatter_dict['tags'] = [tag for tag in frontmatter_dict['tags'] if tag not in status_tags]
-            frontmatter_dict['tags'].append(new_status)
-        elif isinstance(frontmatter_dict['tags'], str):
-            # Replace the old status tag with the new status
-            if frontmatter_dict['tags'] in status_tags:
-                frontmatter_dict['tags'] = new_status
-            else:
-                frontmatter_dict['tags'] = [frontmatter_dict['tags'], new_status]
+
+    # Remove old status tags and add the new status
+    if isinstance(frontmatter_dict["tags"], str) and frontmatter_dict["tags"] != new_status:
+        frontmatter_dict["tags"] = [new_status]
+    elif isinstance(frontmatter_dict["tags"], list):
+        frontmatter_dict["tags"] = [
+            tag
+            for tag in frontmatter_dict["tags"]
+            if tag in status_tags and tag != new_status
+        ]
+        frontmatter_dict["tags"].append(new_status)
     else:
-        # No tags present, add the new status
-        frontmatter_dict['tags'] = [new_status]
+        logging.exception(
+            f"Invalid tags found in {file_path}: {frontmatter_dict['tags']}."
+        )
+        raise ValueError(f"Invalid tags found in frontmatter of {file_path}: {frontmatter_dict['tags']}.")
+    
 
-    # Serialize the updated frontmatter back to a YAML string
-    updated_frontmatter_content = yaml.dump(frontmatter_dict, default_flow_style=False, sort_keys=False, indent=2)
-    updated_frontmatter_content = "---\n" + updated_frontmatter_content + "---\n"
+    new_content = apply_new_frontmatter(frontmatter_dict, file_path)
+    apply_diff(new_content, file_path, auto_apply=True)
 
-    # Replace the original frontmatter in the file content with the updated frontmatter content
-    content = read_md(file_path)
-    new_content = content.replace(frontmatter_str, updated_frontmatter_content, 1)
-
-    # Write the updated content back to the file
-    with open(file_path, 'w') as file:
-        file.write(new_content)
+    return 1
