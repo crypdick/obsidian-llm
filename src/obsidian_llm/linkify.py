@@ -5,8 +5,9 @@ from copy import deepcopy
 from obsidian_llm.diff_generator import add_processed_for_key
 from obsidian_llm.diff_generator import apply_diff
 from obsidian_llm.io import enumerate_markdown_files
-from obsidian_llm.io import parse_frontmatter_content
 from obsidian_llm.io import read_md
+from obsidian_llm.io import splice_content
+from obsidian_llm.io import split_content
 from obsidian_llm.llm import get_oai_client
 from obsidian_llm.llm import query_llm
 
@@ -31,7 +32,9 @@ def linkify_all_notes(vault_path):
         original_content = deepcopy(content)
 
         # Split the content into chunks to send to the LLM and chunks to keep as is
-        chunks_to_send, chunks_to_keep = split_content(content)
+        chunks_to_send, chunks_to_keep = split_content(
+            content, skip_processed_for_tags="linkify"
+        )
         if not chunks_to_send:
             # this can happen if the file only has ineligible content, or if it has already been processed
             logging.debug(f"No content to send to the LLM in {file_path}. Skipping.")
@@ -81,119 +84,3 @@ def suggest_links_llm(content: str) -> str:
     task = f"wikilink this content:\n{content}\n"
     response = query_llm(prompt=prompt, task=task, client=client)
     return response
-
-
-def split_content(content: str) -> tuple:
-    """
-    Splits the content into chunks to send to the LLM and chunks to keep as is.
-
-    The content is withold from the LLM:
-    - YAML frontmatter
-    - code blocks (lines enclosed by triple backticks)
-    - quote blocks (lines starting with `>`)
-
-    We enumerate the chunks to make it possible to splice the chunks in the right order later.
-
-    :param content: The content of a markdown file.
-    :return: A tuple containing a list of chunks to send and a list of chunks to keep.
-    """
-    chunks_to_send = []
-    chunks_to_keep = []
-    chunk_idx = 0
-
-    def save_chunk(chunk, send):
-        nonlocal chunk_idx
-        if not send:
-            chunks_to_keep.append((chunk_idx, chunk))
-        else:
-            chunks_to_send.append((chunk_idx, chunk))
-        chunk_idx += 1
-
-    # Remove the frontmatter if it exists
-    frontmatter_dict, frontmatter_str = parse_frontmatter_content(content)
-    if frontmatter_str:
-        # check if we have already processed this file for linkification, and if so skip it
-        if frontmatter_dict and "processed_for" in frontmatter_dict:
-            if "linkify" in frontmatter_dict["processed_for"]:
-                logging.info(f"Skipping already processed file.")
-                return [], []
-
-        save_chunk(frontmatter_str, send=False)
-        content = content.replace(frontmatter_str, "", 1)
-
-    lines = content.split("\n")
-    buffer = []
-    for line in lines:
-        # detect code blocks or block comments
-        if line.strip().startswith(("```", "%%")):
-            if buffer:  # reached end of code block; save the buffer as a chunk
-                buffer.append(line)
-                save_chunk("\n".join(buffer), send=False)
-                buffer = []
-            else:  # start of code block; start buffering
-                buffer.append(line)
-        elif buffer:  # inside code block; keep buffering
-            buffer.append(line)
-        elif line.strip() == "":
-            save_chunk(line, send=False)
-        elif line.strip().startswith(
-            (
-                # ignore diary tags
-                "gratitude::",
-                "dream::",
-                "highlight::",
-                "hope::",
-                "lesson::",
-                # ignore Templater code
-                "{%",
-                "- {{",
-                "- <",
-                "|",  # ignore markdown tables
-                ">",  # ignore blockquotes
-                "$$",  # ignore math blocks
-                # ignore horizontal rules
-                "---",
-                "***",
-                "___",
-                "* * *",
-                "- - -",
-                "_ _ _",
-                "![",  # ignore images or transcluded content
-                "#",  # ignore headings
-                # ignore URLs
-                "https://",
-                "http://",
-                "<iframe",  # ignore iframes
-                "<img",  # ignore images
-                "<div",  # ignore divs
-                "<span",  # ignore spans
-                "<a ",  # ignore links
-                "<!--",  # ignore HTML comments
-                "</",  # ignore closing tags
-            )
-        ):
-            save_chunk(line, send=False)
-        elif len(line.strip()) < 3:  # ignore lines with less than 3 characters
-            save_chunk(line, send=False)
-        elif not any(char.isalpha() for char in line):
-            # ignore lines with no alphabetic characters
-            save_chunk(line, send=False)
-        else:
-            save_chunk(line, send=True)
-    return chunks_to_send, chunks_to_keep
-
-
-def splice_content(chunks_to_keep: list, processed_chunks: list) -> str:
-    """
-    Splices the processed chunks and the chunks to keep back together, preserving the original order.
-
-    :param processed_chunks: A list of content chunks processed by the LLM.
-    :param chunks_to_keep: A list of content chunks to keep as is.
-    :return: The spliced content.
-    """
-    chunks = sorted(processed_chunks + chunks_to_keep, key=lambda x: x[0])
-    new_content = "\n".join([chunk for _, chunk in chunks])
-    # ensure the content ends with a newline
-    if not new_content.endswith("\n"):
-        new_content += "\n"
-    return new_content
