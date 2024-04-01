@@ -35,7 +35,12 @@ def linkify_all_notes(vault_path):
         else:
             frontmatter_str = ""
 
-        new_content = suggest_links_llm(content)
+        # Split the content into chunks to send to the LLM and chunks to keep as is
+        chunks_to_send, chunks_to_keep = split_content(content)
+        # Process chunks to send through the LLM
+        processed_chunks = [suggest_links_llm(chunk) for chunk in chunks_to_send]
+        # Splice the processed chunks and the chunks to keep back together
+        new_content = splice_content(processed_chunks, chunks_to_keep)
         new_content = frontmatter_str + new_content
         # check if the content ends with a newline, and if not, add one
         if not new_content.endswith("\n"):
@@ -72,3 +77,45 @@ def suggest_links_llm(content: str) -> str:
     task = "wikilink this content: ```\n" + content + "\n```"
     response = query_llm(prompt=prompt, task=task, client=client)
     return response
+def split_content(content: str) -> tuple:
+    """
+    Splits the content into chunks to send to the LLM and chunks to keep as is.
+
+    :param content: The content of a markdown file.
+    :return: A tuple containing a list of chunks to send and a list of chunks to keep.
+    """
+    chunks_to_send = []
+    chunks_to_keep = []
+    lines = content.split('\n')
+    buffer = []
+    for line in lines:
+        if line.startswith('>'):
+            if buffer:
+                chunks_to_send.append('\n'.join(buffer))
+                buffer = []
+            chunks_to_keep.append(line)
+        else:
+            buffer.append(line)
+    if buffer:
+        chunks_to_send.append('\n'.join(buffer))
+    return chunks_to_send, chunks_to_keep
+
+def splice_content(processed_chunks: list, chunks_to_keep: list) -> str:
+    """
+    Splices the processed chunks and the chunks to keep back together.
+
+    :param processed_chunks: A list of content chunks processed by the LLM.
+    :param chunks_to_keep: A list of content chunks to keep as is.
+    :return: The spliced content.
+    """
+    content = ''
+    keep_index = 0
+    send_index = 0
+    while keep_index < len(chunks_to_keep) or send_index < len(processed_chunks):
+        if keep_index < len(chunks_to_keep):
+            content += chunks_to_keep[keep_index] + '\n'
+            keep_index += 1
+        if send_index < len(processed_chunks):
+            content += processed_chunks[send_index] + '\n'
+            send_index += 1
+    return content.strip('\n')
