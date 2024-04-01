@@ -49,26 +49,35 @@ def parse_frontmatter(file_path):
     :param file_path: Path to the markdown file.
     :return: A tuple of (frontmatter_dict, frontmatter_str) if frontmatter is present, otherwise (None, None).
     """
-    frontmatter_pattern = re.compile(r"^---\s*\n(.*?\n)---\s*\n", re.DOTALL)
 
     try:
         with open(file_path, encoding="utf-8") as file:
             content = file.read()
-            match = frontmatter_pattern.search(content)
-            if match:
-                frontmatter_str = match.group(0)
-                frontmatter_dict = yaml.safe_load(match.group(1))
+            frontmatter_dict, frontmatter_str = parse_frontmatter_content(content)
+            if frontmatter_dict:
                 logging.debug(
                     f"Frontmatter block found and parsed successfully for {file_path}."
                 )
-                return frontmatter_dict, frontmatter_str
             else:
                 logging.debug(f"No frontmatter block found in {file_path}.")
-                return None, None
+
+            return frontmatter_dict, frontmatter_str
+
     except Exception as e:
         logging.error(
             "An error occurred while verifying frontmatter: %s", e, exc_info=True
         )
+        return None, None
+
+
+def parse_frontmatter_content(content: str):
+    frontmatter_pattern = re.compile(r"^---\s*\n(.*?\n)---\s*\n", re.DOTALL)
+    match = frontmatter_pattern.search(content)
+    if match:
+        frontmatter_str = match.group(0)
+        frontmatter_dict = yaml.safe_load(match.group(1))
+        return frontmatter_dict, frontmatter_str
+    else:
         return None, None
 
 

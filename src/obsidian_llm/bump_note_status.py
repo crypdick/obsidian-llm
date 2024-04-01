@@ -18,7 +18,7 @@ def bump_all_note_status(vault_path: str) -> None:
     status_tags = {
         "Stub": "📝/🟥",
         "Processing": "📝/🟧️",
-        "Evergreen": "📝📝��🟩",
+        "Evergreen": "📝/🟩",
         "Malformed": "📝",
     }
     stubs = list_files_with_tag(vault_path, status_tags["Malformed"])
@@ -29,13 +29,12 @@ def bump_all_note_status(vault_path: str) -> None:
         num_links = count_links_in_file(file_path)
         updated = bump_note_status_for_file(file_path, num_links, status_tags)
         num_changed += updated
+        # note: no need to add processed_for key, since the status is already updated
 
     logging.info(f"Bumped status for {num_changed} notes of {len(stubs)} stubs.")
 
 
-def bump_note_status_for_file(
-    file_path: str, num_links: int, status_tags: dict
-) -> int:
+def bump_note_status_for_file(file_path: str, num_links: int, status_tags: dict) -> int:
     """
     Updates the status of a note based on the number of links it contains.
 
@@ -59,7 +58,10 @@ def bump_note_status_for_file(
     # Update the tags in the frontmatter
 
     # Remove old status tags and add the new status
-    if isinstance(frontmatter_dict["tags"], str) and frontmatter_dict["tags"] != new_status:
+    if (
+        isinstance(frontmatter_dict["tags"], str)
+        and frontmatter_dict["tags"] != new_status
+    ):
         frontmatter_dict["tags"] = [new_status]
     elif isinstance(frontmatter_dict["tags"], list):
         frontmatter_dict["tags"] = [
@@ -72,8 +74,9 @@ def bump_note_status_for_file(
         logging.exception(
             f"Invalid tags found in {file_path}: {frontmatter_dict['tags']}."
         )
-        raise ValueError(f"Invalid tags found in frontmatter of {file_path}: {frontmatter_dict['tags']}.")
-    
+        raise ValueError(
+            f"Invalid tags found in frontmatter of {file_path}: {frontmatter_dict['tags']}."
+        )
 
     new_content = apply_new_frontmatter(frontmatter_dict, file_path)
     apply_diff(new_content, file_path, auto_apply=True)

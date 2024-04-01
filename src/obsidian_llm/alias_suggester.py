@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from obsidian_llm.llm import get_oai_client
 from obsidian_llm.llm import query_llm
 
+from .diff_generator import add_processed_for_key
 from .diff_generator import apply_diff
 from .diff_generator import get_alias_diff
 from .io import enumerate_markdown_files
@@ -73,6 +74,7 @@ def generate_all_aliases(vault_path: str):
                 logging.info(
                     f"Diff generated and user decision processed for {file_path}."
                 )
+                add_processed_for_key(file_path, "new_aliases")
 
             else:
                 continue

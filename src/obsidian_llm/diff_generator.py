@@ -49,15 +49,30 @@ def get_alias_diff(file_path, new_aliases, frontmatter_dict: dict | None):
     ):
         frontmatter_dict["aliases"] = []
 
-    # Add 'processed_for' key to mark the file as processed
-    if "processed_for" not in frontmatter_dict:
-        frontmatter_dict["processed_for"] = []
-    if "new_aliases" not in frontmatter_dict["processed_for"]:
-        frontmatter_dict["processed_for"].append("new_aliases")
-
     new_content = apply_new_frontmatter(frontmatter_dict, file_path)
 
     return new_content
+
+
+def add_processed_for_key(file_path: str, key: str):
+    """
+    Add a 'processed_for' key to the frontmatter of a markdown file to mark it as processed for a specific task.
+
+    :param file_path: Path to the markdown file.
+    :param key: The key to add to the 'processed_for' list in the frontmatter.
+    """
+    frontmatter_dict, _ = parse_frontmatter(file_path)
+    if frontmatter_dict:
+        if "processed_for" not in frontmatter_dict:
+            frontmatter_dict["processed_for"] = []
+        if key not in frontmatter_dict["processed_for"]:
+            frontmatter_dict["processed_for"].append(key)
+        new_content = apply_new_frontmatter(frontmatter_dict, file_path)
+        apply_diff(new_content, file_path, auto_apply=True)
+    else:
+        logging.error(
+            f"Frontmatter not found in {file_path}. Cannot add processed_for key."
+        )
 
 
 def apply_new_frontmatter(frontmatter_dict: dict, file_path: str) -> str:
