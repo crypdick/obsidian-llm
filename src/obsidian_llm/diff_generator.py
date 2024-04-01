@@ -106,12 +106,17 @@ def apply_diff(new_content: str | None, old_file, auto_apply: bool = False):
             logging.info(f"Updated file {old_file} with new content without review.")
             return
         else:
-            # Open the diff in meld for user review, and wait for the user to close the meld window
-            # when the user saves within meld, the file will be updated.
-            subprocess.run(["meld", old_file, temp_file_path])
-            logging.info(f"User reviewed suggested diff for {old_file}.")
+            run_meld(old_file, temp_file_path)
+
     except Exception as e:
         logging.error(
             f"An error occurred while updating file {old_file} with new content: {e}"
         )
         logging.error("Error trace:", exc_info=True)
+
+
+def run_meld(old_file, new_file):
+    # Open the diff in meld for user review, and wait for the user to close the meld window
+    # when the user saves within meld, the file will be updated.
+    subprocess.run(["meld", old_file, new_file])
+    logging.info(f"User reviewed suggested diff for {old_file}.")
