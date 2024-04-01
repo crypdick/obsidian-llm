@@ -35,3 +35,7 @@ linkify:
 	poetry run obsidian-llm --task linkify
 spell-check-titles:
 	poetry run obsidian-llm --task spell-check-titles
+bump-journal-status:
+	poetry run obsidian-llm --task bump-journal-status
+spell-check-titles:
+	poetry run obsidian-llm --task spell-check-titles
