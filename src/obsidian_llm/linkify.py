@@ -77,6 +77,8 @@ def suggest_links_llm(content: str) -> str:
     task = "wikilink this content: ```\n" + content + "\n```"
     response = query_llm(prompt=prompt, task=task, client=client)
     return response
+
+
 def split_content(content: str) -> tuple:
     """
     Splits the content into chunks to send to the LLM and chunks to keep as is.
@@ -86,19 +88,20 @@ def split_content(content: str) -> tuple:
     """
     chunks_to_send = []
     chunks_to_keep = []
-    lines = content.split('\n')
+    lines = content.split("\n")
     buffer = []
     for line in lines:
-        if line.startswith('>'):
+        if line.startswith(">"):
             if buffer:
-                chunks_to_send.append('\n'.join(buffer))
+                chunks_to_send.append("\n".join(buffer))
                 buffer = []
             chunks_to_keep.append(line)
         else:
             buffer.append(line)
     if buffer:
-        chunks_to_send.append('\n'.join(buffer))
+        chunks_to_send.append("\n".join(buffer))
     return chunks_to_send, chunks_to_keep
+
 
 def splice_content(processed_chunks: list, chunks_to_keep: list) -> str:
     """
@@ -108,14 +111,14 @@ def splice_content(processed_chunks: list, chunks_to_keep: list) -> str:
     :param chunks_to_keep: A list of content chunks to keep as is.
     :return: The spliced content.
     """
-    content = ''
+    content = ""
     keep_index = 0
     send_index = 0
     while keep_index < len(chunks_to_keep) or send_index < len(processed_chunks):
         if keep_index < len(chunks_to_keep):
-            content += chunks_to_keep[keep_index] + '\n'
+            content += chunks_to_keep[keep_index] + "\n"
             keep_index += 1
         if send_index < len(processed_chunks):
-            content += processed_chunks[send_index] + '\n'
+            content += processed_chunks[send_index] + "\n"
             send_index += 1
-    return content.strip('\n')
+    return content.strip("\n")
