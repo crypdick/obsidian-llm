@@ -67,3 +67,21 @@ def test_generate_alias_suggestions_with_existing_aliases_and_none_suggestions(
         "test title", existing_aliases=["alias1", "alias2"]
     )
     assert result is None
+import pytest
+
+from obsidian_llm.alias_suggester import generate_all_aliases
+from obsidian_llm.alias_suggester import generate_alias_suggestions
+
+# TODO: Implement test cases for generate_all_aliases function
+def test_generate_all_aliases():
+    # Setup test environment
+    # Call generate_all_aliases
+    # Assert expected outcomes
+    pass
+
+# TODO: Implement test cases for generate_alias_suggestions function
+def test_generate_alias_suggestions():
+    # Setup test environment
+    # Call generate_alias_suggestions
+    # Assert expected outcomes
+    pass
