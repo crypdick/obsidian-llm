@@ -23,18 +23,18 @@
 
 # Obsidian.md Vault Improvement Assistant
 
-This project aims to automate maintainence of the markdown files within an Obsidian.md vault. 
+This project aims to automate maintainence of the markdown files within an Obsidian.md vault.
 
 ## Features
 
 - **Filling Missing Aliases**: suggests missing aliases within the YAML frontmatter
-- (planned feature) **Bumping Note Status**: scans all notes currently tagged as stubs (`📝/🟥️`) and decide whether to bump its status. In particular, we count the number of links in the body of the note and suggest a status based on that. Note status are as follows:
-  - `📝/🟥️`: *Stub*. 0 links.
-  - `📝/🟧️`: *Processing*. 1-4 links.
-  - `📝/🟩️`: *Evergreen*. 5+ links.
-- (planned feature) **Bumping Journal Status**: scans all journal notes tagged as incomplete (`📓/🟥️`) and decides whether to bump its status. In particular, we use ChatGPT to decide whether there are any action items in the note. If there are, it will prompt the user to capture them into a task manager (manual step). When the user indicates they have finished capturing the tasks, the 
-  - `📓/🟨`: *Captured*. The note contained action items, and the user has finished capturing them into a task manager.
-  - `📓/🟩️`: *Processed*. The note contained no action items, and does not need to be processed further.
+- **Bumping Note Status**: scans all notes currently tagged as stubs (`📝/🟥️`) and decide whether to bump its status. In particular, we count the number of links in the body of the note and suggest a status based on that. Note status are as follows:
+  - `📝/🟥️`: _Stub_. 0 links.
+  - `📝/🟧️`: _Processing_. 1-4 links.
+  - `📝/🟩️`: _Evergreen_. 5+ links.
+- (planned feature) **Bumping Journal Status**: scans all journal notes tagged as incomplete (`📓/🟥️`) and decides whether to bump its status. In particular, we use ChatGPT to decide whether there are any action items in the note. If there are, it will prompt the user to capture them into a task manager (manual step). When the user indicates they have finished capturing the tasks, the
+  - `📓/🟨`: _Captured_. The note contained action items, and the user has finished capturing them into a task manager.
+  - `📓/🟩️`: _Processed_. The note contained no action items, and does not need to be processed further.
 
 All edits are presented to the user in a `meld` diff editor, allowing for interactive approval or modification of suggestions.
 

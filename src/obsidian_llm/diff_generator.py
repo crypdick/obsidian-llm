@@ -55,9 +55,22 @@ def get_alias_diff(file_path, new_aliases, frontmatter_dict: dict | None):
     if "new_aliases" not in frontmatter_dict["processed_for"]:
         frontmatter_dict["processed_for"].append("new_aliases")
 
+    new_content = apply_new_frontmatter(frontmatter_dict, file_path)
+
+    return new_content
+
+
+def apply_new_frontmatter(frontmatter_dict: dict, file_path: str) -> str:
+    """
+    Replace the frontmatter in the original file with the updated frontmatter content.
+    """
     # Serialize the updated frontmatter back to a YAML string
     updated_frontmatter_content = yaml.dump(
-        frontmatter_dict, default_flow_style=False, sort_keys=False, indent=2
+        frontmatter_dict,
+        default_flow_style=False,
+        sort_keys=False,
+        indent=2,
+        allow_unicode=True,  # important to preserve emojis
     )
     updated_frontmatter_content = "---\n" + updated_frontmatter_content + "---\n"
 

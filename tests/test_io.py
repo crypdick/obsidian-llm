@@ -1,11 +1,13 @@
 from tempfile import NamedTemporaryFile
+
 from obsidian_llm.io import count_links_in_file
+
 
 def test_count_links_in_file():
     """
     Test the count_links_in_file function with a temporary markdown file.
     """
-    with NamedTemporaryFile(mode='w+', suffix='.md', delete=False) as tmp:
+    with NamedTemporaryFile(mode="w+", suffix=".md", delete=False) as tmp:
         # Write content with WikiLinks to the temporary file
         content = "This is a test file with [[WikiLink1]] and [[WikiLink2]]."
         tmp.write(content)

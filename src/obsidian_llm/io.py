@@ -57,10 +57,12 @@ def parse_frontmatter(file_path):
             if match:
                 frontmatter_str = match.group(0)
                 frontmatter_dict = yaml.safe_load(match.group(1))
-                logging.info("Frontmatter block found and parsed successfully.")
+                logging.debug(
+                    f"Frontmatter block found and parsed successfully for {file_path}."
+                )
                 return frontmatter_dict, frontmatter_str
             else:
-                logging.info(f"No frontmatter block found in {file_path}.")
+                logging.debug(f"No frontmatter block found in {file_path}.")
                 return None, None
     except Exception as e:
         logging.error(
@@ -83,12 +85,19 @@ def list_files_with_tag(vault_path: str, tag: str) -> list:
         frontmatter_dict, _ = parse_frontmatter(file_path)
         if frontmatter_dict and "tags" in frontmatter_dict:
             tags = frontmatter_dict["tags"]
+            if not isinstance(tags, (list, str)):
+                raise ValueError(
+                    f"Tags in {file_path} must be a list or str, got {tags} of type {type(tags)}"
+                )
             if isinstance(tags, list) and tag in tags:
                 tagged_files.append(file_path)
             elif isinstance(tags, str) and tag == tags:
                 tagged_files.append(file_path)
+            else:
+                logging.debug(f"Tag {tag} not found in {tags} for {file_path}.")
+    logging.info(f"Found {len(tagged_files)} files tagged with {tag}.")
     return tagged_files
-import re
+
 
 def count_links_in_file(file_path: str) -> int:
     """
@@ -102,10 +111,10 @@ def count_links_in_file(file_path: str) -> int:
     # Remove the frontmatter if it exists
     _, frontmatter_str = parse_frontmatter(file_path)
     if frontmatter_str:
-        content = content.replace(frontmatter_str, '', 1)
+        content = content.replace(frontmatter_str, "", 1)
     # Define the pattern to match [[WikiLinks]]
-    wikilink_pattern = re.compile(r'\[\[(.*?)\]\]')
+    wikilink_pattern = re.compile(r"\[\[(.*?)\]\]")
     # Find all matches of the pattern
     links = wikilink_pattern.findall(content)
-    # Return the number of links found
+    logging.debug(f"Found {len(links)} links in file {file_path}.")
     return len(links)
