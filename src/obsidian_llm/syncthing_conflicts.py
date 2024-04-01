@@ -2,6 +2,9 @@ import logging
 import os
 import re
 
+from obsidian_llm.diff_generator import run_meld
+
+
 def list_conflict_files(vault_path: str) -> list:
     """
     Lists all files within the given vault directory that contain Syncthing conflict markers.
@@ -10,12 +13,13 @@ def list_conflict_files(vault_path: str) -> list:
     :return: List of paths to files that contain conflict markers.
     """
     conflict_files = []
-    conflict_pattern = re.compile(r'\.sync-conflict-\d{8}-\d{6}\.md$')
+    conflict_pattern = re.compile(r"\.sync-conflict-.*\.md$")
     for root, _, files in os.walk(vault_path):
         for file in files:
             if conflict_pattern.search(file):
                 conflict_files.append(os.path.join(root, file))
     return conflict_files
+
 
 def merge_syncthing_conflicts(vault_path: str) -> None:
     """
@@ -28,11 +32,15 @@ def merge_syncthing_conflicts(vault_path: str) -> None:
     """
     logging.info("Merging Syncthing conflicts")
     sync_conflicts = list_conflict_files(vault_path)
-    for file_path in sync_conflicts:
+    for conflict_file_path in sync_conflicts:
         # extract the original file path by removing everything after the .sync-conflict marker
-        original_file_path = re.sub(r'\.sync-conflict-\d{8}-\d{6}', '', file_path)
-        # TODO: Implement the merging logic
-        logging.info(f"Original file: {original_file_path}, Conflict file: {file_path}")
-        # TODO
-        # merge the original file with the conflict file using meld
-        # TODO
+        original_file_path = re.sub(r"\.sync-conflict-.*", "", conflict_file_path)
+        # add back the .md extension
+        original_file_path += ".md"
+
+        logging.info(
+            f"Original file: {original_file_path}, Conflict file: {conflict_file_path}"
+        )
+        run_meld(original_file_path, conflict_file_path)
+        # delete the conflict file after merging
+        os.remove(conflict_file_path)

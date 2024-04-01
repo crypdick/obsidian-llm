@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 from obsidian_llm.alias_suggester import generate_all_aliases
 from obsidian_llm.bump_note_status import bump_all_note_status
+from obsidian_llm.syncthing_conflicts import merge_syncthing_conflicts
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -24,7 +25,14 @@ load_dotenv()
 )
 @click.option(
     "--task",
-    type=click.Choice(["aliases", "bump-note-status", "bump-journal-status"]),
+    type=click.Choice(
+        [
+            "aliases",
+            "bump-note-status",
+            "bump-journal-status",
+            "merge-syncthing-conflicts",
+        ]
+    ),
     default="aliases",
 )
 @click.option("--test-vault", is_flag=True, help="Run tests.")
@@ -49,6 +57,9 @@ def main(vault_path, task, test_vault) -> None:
     elif task == "bump-note-status":
         logging.info("Bumping note status")
         bump_all_note_status(vault_path)
+    elif task == "merge-syncthing-conflicts":
+        logging.info("Merging Syncthing conflicts")
+        merge_syncthing_conflicts(vault_path)
     else:
         logging.error(f"Invalid task: {task}. Please provide a valid task.")
         return

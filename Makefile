@@ -27,3 +27,6 @@ bump-note-status:
 
 bump-patch:
 	poetry version patch
+
+merge-syncthing-conflicts:
+	poetry run obsidian-llm --task merge-syncthing-conflicts
