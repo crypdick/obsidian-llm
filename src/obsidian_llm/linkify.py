@@ -2,9 +2,10 @@ import logging
 import random
 from copy import deepcopy
 
+from obsidian_llm.diff_generator import add_processed_for_key
 from obsidian_llm.diff_generator import apply_diff
 from obsidian_llm.io import enumerate_markdown_files
-from obsidian_llm.io import parse_frontmatter
+from obsidian_llm.io import parse_frontmatter_content
 from obsidian_llm.io import read_md
 from obsidian_llm.llm import get_oai_client
 from obsidian_llm.llm import query_llm
@@ -28,29 +29,31 @@ def linkify_all_notes(vault_path):
     for file_path in md_files:
         content = read_md(file_path)
         original_content = deepcopy(content)
-        # Remove the frontmatter if it exists
-        _, frontmatter_str = parse_frontmatter(file_path)
-        if frontmatter_str:
-            content = content.replace(frontmatter_str, "", 1)
-        else:
-            frontmatter_str = ""
 
         # Split the content into chunks to send to the LLM and chunks to keep as is
         chunks_to_send, chunks_to_keep = split_content(content)
-        # Process chunks to send through the LLM
-        processed_chunks = [suggest_links_llm(chunk) for chunk in chunks_to_send]
+        if not chunks_to_send:
+            # this can happen if the file only has ineligible content, or if it has already been processed
+            logging.debug(f"No content to send to the LLM in {file_path}. Skipping.")
+            continue
+        # Process chunks to send through the LLM, keeping track of the original indices
+        processed_chunks = []
+        logging.info(f"Processing {len(chunks_to_send)} chunks in {file_path}.")
+        for idx, chunk in chunks_to_send:
+            processed_chunk = suggest_links_llm(chunk)
+            processed_chunks.append((idx, processed_chunk))
+
         # Splice the processed chunks and the chunks to keep back together
-        new_content = splice_content(chunks_to_send, chunks_to_keep, processed_chunks)
-        new_content = frontmatter_str + new_content
-        # check if the content ends with a newline, and if not, add one
-        if not new_content.endswith("\n"):
-            new_content += "\n"
+        new_content = splice_content(chunks_to_keep, processed_chunks)
 
         if new_content != original_content:
             logging.info(f"Changes detected in {file_path}. Applying diff.")
             apply_diff(new_content=new_content, old_file=file_path, auto_apply=False)
         else:
             logging.info(f"No changes detected in {file_path}. Skipping.")
+        add_processed_for_key(file_path, "linkify")
+
+    logging.info(f"Linkification completed for {len(md_files)} notes.")
 
 
 def suggest_links_llm(content: str) -> str:
@@ -61,20 +64,21 @@ def suggest_links_llm(content: str) -> str:
     :return: The content with suggested wikilinks.
     """
     client = get_oai_client()
+    # note: we already filter out code blocks, quote blocks, front matter, etc. in split_content
     prompt = """You are an assistant that helps add missing wikilinks. You should not change the meaning of the content or expand upon the content.
 
     Guidelines:
     - Add wikilinks to salient terms, phrases, or concepts
-    - Do NOT modify existing wikilinks! Ignore them. Only suggest new wikilinks.
+    - Do NOT edit existing wikilinks! Ignore them. Only suggest new wikilinks.
     - Do NOT suggest external links, only internal (wiki) links
     - Personal names are prefixed with an '@' symbol, e.g. '[[@John Doe]]'
     - Book titles are prefixed with a '(BOOK) ', e.g. '[[(BOOK) Moby Dick]]'
     - Article titles should follow Wikipedia article title conventions
-    - Only pipe the link to relabel the link, e.g. use [[apple]] instead of [[apple|apple]]
-    - Do NOT modify code blocks or inline code
-    - Do not wrap your response in triple backticks
+    - Only pipe the link to relabel a link, e.g. use simply [[apple]] instead of [[apple|apple]]
+    - Do NOT edit `inline code`
+    - Avoid repeatedly linking to the same target article
     """
-    task = "wikilink this content: ```\n" + content + "\n```"
+    task = f"wikilink this content:\n{content}\n"
     response = query_llm(prompt=prompt, task=task, client=client)
     return response
 
@@ -83,56 +87,113 @@ def split_content(content: str) -> tuple:
     """
     Splits the content into chunks to send to the LLM and chunks to keep as is.
 
+    The content is withold from the LLM:
+    - YAML frontmatter
+    - code blocks (lines enclosed by triple backticks)
+    - quote blocks (lines starting with `>`)
+
+    We enumerate the chunks to make it possible to splice the chunks in the right order later.
+
     :param content: The content of a markdown file.
     :return: A tuple containing a list of chunks to send and a list of chunks to keep.
     """
     chunks_to_send = []
     chunks_to_keep = []
+    chunk_idx = 0
+
+    def save_chunk(chunk, send):
+        nonlocal chunk_idx
+        if not send:
+            chunks_to_keep.append((chunk_idx, chunk))
+        else:
+            chunks_to_send.append((chunk_idx, chunk))
+        chunk_idx += 1
+
+    # Remove the frontmatter if it exists
+    frontmatter_dict, frontmatter_str = parse_frontmatter_content(content)
+    if frontmatter_str:
+        # check if we have already processed this file for linkification, and if so skip it
+        if frontmatter_dict and "processed_for" in frontmatter_dict:
+            if "linkify" in frontmatter_dict["processed_for"]:
+                logging.info(f"Skipping already processed file.")
+                return [], []
+
+        save_chunk(frontmatter_str, send=False)
+        content = content.replace(frontmatter_str, "", 1)
+
     lines = content.split("\n")
     buffer = []
     for line in lines:
-        if line.startswith(">"):
-            if buffer:
-                chunks_to_send.append("\n".join(buffer))
+        # detect code blocks or block comments
+        if line.strip().startswith(("```", "%%")):
+            if buffer:  # reached end of code block; save the buffer as a chunk
+                buffer.append(line)
+                save_chunk("\n".join(buffer), send=False)
                 buffer = []
-            chunks_to_keep.append(line)
-        else:
+            else:  # start of code block; start buffering
+                buffer.append(line)
+        elif buffer:  # inside code block; keep buffering
             buffer.append(line)
-    if buffer:
-        chunks_to_send.append("\n".join(buffer))
+        elif line.strip() == "":
+            save_chunk(line, send=False)
+        elif line.strip().startswith(
+            (
+                # ignore diary tags
+                "gratitude::",
+                "dream::",
+                "highlight::",
+                "hope::",
+                "lesson::",
+                # ignore Templater code
+                "{%",
+                "- {{",
+                "- <",
+                "|",  # ignore markdown tables
+                ">",  # ignore blockquotes
+                "$$",  # ignore math blocks
+                # ignore horizontal rules
+                "---",
+                "***",
+                "___",
+                "* * *",
+                "- - -",
+                "_ _ _",
+                "![",  # ignore images or transcluded content
+                "#",  # ignore headings
+                # ignore URLs
+                "https://",
+                "http://",
+                "<iframe",  # ignore iframes
+                "<img",  # ignore images
+                "<div",  # ignore divs
+                "<span",  # ignore spans
+                "<a ",  # ignore links
+                "<!--",  # ignore HTML comments
+                "</",  # ignore closing tags
+            )
+        ):
+            save_chunk(line, send=False)
+        elif len(line.strip()) < 3:  # ignore lines with less than 3 characters
+            save_chunk(line, send=False)
+        elif not any(char.isalpha() for char in line):
+            # ignore lines with no alphabetic characters
+            save_chunk(line, send=False)
+        else:
+            save_chunk(line, send=True)
     return chunks_to_send, chunks_to_keep
 
 
-def splice_content(chunks_to_send: list, chunks_to_keep: list, processed_chunks: list) -> str:
+def splice_content(chunks_to_keep: list, processed_chunks: list) -> str:
     """
-    Splices the processed chunks and the chunks to keep back together.
+    Splices the processed chunks and the chunks to keep back together, preserving the original order.
 
     :param processed_chunks: A list of content chunks processed by the LLM.
     :param chunks_to_keep: A list of content chunks to keep as is.
     :return: The spliced content.
     """
-    content = ""
-    keep_index = 0
-    send_index = 0
-    while keep_index < len(chunks_to_keep) or send_index < len(processed_chunks):
-        if keep_index < len(chunks_to_keep):
-            content += chunks_to_keep[keep_index] + "\n"
-            keep_index += 1
-        if send_index < len(processed_chunks):
-            content += processed_chunks[send_index] + "\n"
-            send_index += 1
-    return content.strip("\n")
-    # Create an iterator for the processed chunks
-    processed_chunks_iter = iter(processed_chunks)
-    content = ""
-    for original_chunk in chunks_to_send:
-        # If the original chunk was meant to be processed, replace it with the processed chunk
-        if original_chunk in chunks_to_send:
-            content += next(processed_chunks_iter) + "\n"
-        # If the original chunk was meant to be kept, keep it as is
-        else:
-            content += original_chunk + "\n"
-    # Ensure that any remaining chunks to keep are added to the content
-    for chunk in chunks_to_keep:
-        content += chunk + "\n"
-    return content.strip("\n")
+    chunks = sorted(processed_chunks + chunks_to_keep, key=lambda x: x[0])
+    new_content = "\n".join([chunk for _, chunk in chunks])
+    # ensure the content ends with a newline
+    if not new_content.endswith("\n"):
+        new_content += "\n"
+    return new_content
