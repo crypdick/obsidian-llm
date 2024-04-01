@@ -8,10 +8,11 @@ from dotenv import load_dotenv
 
 from obsidian_llm.alias_suggester import generate_all_aliases
 from obsidian_llm.bump_note_status import bump_all_note_status
+from obsidian_llm.linkify import linkify_all_notes
 from obsidian_llm.syncthing_conflicts import merge_syncthing_conflicts
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 # load configuration from .env file
 load_dotenv()
@@ -31,6 +32,7 @@ load_dotenv()
             "bump-note-status",
             "bump-journal-status",
             "merge-syncthing-conflicts",
+            "linkify",
         ]
     ),
     default="aliases",
@@ -60,6 +62,9 @@ def main(vault_path, task, test_vault) -> None:
     elif task == "merge-syncthing-conflicts":
         logging.info("Merging Syncthing conflicts")
         merge_syncthing_conflicts(vault_path)
+    elif task == "linkify":
+        logging.info("Linkifying notes")
+        linkify_all_notes(vault_path)
     else:
         logging.error(f"Invalid task: {task}. Please provide a valid task.")
         return
