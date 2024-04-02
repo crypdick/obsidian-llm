@@ -118,6 +118,9 @@ jobs:
         run: |
           pip install --constraint=.github/workflows/constraints.txt pip
           pip --version
+          which pip
+          which python
+          python --version
 
       - name: Install Poetry
         run: |
