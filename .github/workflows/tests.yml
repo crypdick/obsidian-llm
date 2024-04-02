@@ -38,6 +38,7 @@ jobs:
         run: |
           pip install --constraint=.github/workflows/constraints.txt pip
           pip --version
+          pip install pipx
 
       - name: Upgrade pip in virtual environments
         shell: python
@@ -121,6 +122,7 @@ jobs:
           which pip
           which python
           python --version
+          pip install pipx
 
       - name: Install Poetry
         run: |
