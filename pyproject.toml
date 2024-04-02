@@ -19,13 +19,11 @@ Changelog = "https://github.com/crypdick/obsidian-llm/releases"
 python = ">=3.11,<3.13"
 click = ">=8.0.1"
 pyautogen = "^0.2.21"
-pytest = "^8.1.1"
 pydotenv = "^0.0.7"
 openai = "^1.14.3"
 pyyaml = "^6.0.1"
 beartype = "^0.17.2"
 pyspellchecker = "^0.8.1"
-pytest-mock = "^3.14.0"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"
@@ -54,6 +52,11 @@ myst-parser = {version = ">=0.16.1"}
 
 [tool.poetry.scripts]
 obsidian-llm = "obsidian_llm.__main__:main"
+
+[tool.poetry.group.dev.dependencies]
+types-pyyaml = "^6.0.12.20240311"
+pytest-mock = "^3.14.0"
+pytest = "^8.1.1"
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
