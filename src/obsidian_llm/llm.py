@@ -45,7 +45,7 @@ def query_llm(
             temperature=0.7,
         )
 
-        return response.choices[0].message.content.strip()
+        return response.choices[0].message.content.strip()  # type: ignore
     except Exception as e:
         logging.error(f"An error occurred while querying the LLM: {e}")
         logging.error("Error trace:", exc_info=True)
