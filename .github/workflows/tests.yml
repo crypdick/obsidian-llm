@@ -51,6 +51,7 @@ jobs:
       - name: Install Poetry
         run: |
           pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
+          poetry env use 3.11
           poetry --version
 
       - name: Install Nox
@@ -109,7 +110,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -121,6 +122,7 @@ jobs:
       - name: Install Poetry
         run: |
           pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
+          poetry env use 3.11
           poetry --version
 
       - name: Install Nox
