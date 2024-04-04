@@ -39,3 +39,6 @@ spell-check-titles:
 
 bump-journal-status:
 	poetry run obsidian-llm --task bump-journal-status
+
+fix-file-names:
+	poetry run obsidian-llm --task fix-file-names

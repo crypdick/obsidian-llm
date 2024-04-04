@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from obsidian_llm.alias_suggester import generate_all_aliases
 from obsidian_llm.bump_journal_status import bump_journal_status
 from obsidian_llm.bump_note_status import bump_all_note_status
+from obsidian_llm.fix_filenames import fix_file_names
 from obsidian_llm.linkify import linkify_all_notes
 from obsidian_llm.spell_check import spell_check_titles
 from obsidian_llm.syncthing_conflicts import merge_syncthing_conflicts
@@ -36,6 +37,7 @@ load_dotenv()
             "merge-syncthing-conflicts",
             "linkify",
             "spell-check-titles",
+            "fix-file-names",
         ]
     ),
     default="aliases",
@@ -74,6 +76,9 @@ def main(vault_path, task, test_vault) -> None:
     elif task == "bump-journal-status":
         logging.info("Bumping journal status")
         bump_journal_status(vault_path)
+    elif task == "fix-file-names":
+        logging.info("Fixing file names")
+        fix_file_names(vault_path)
     else:
         logging.error(f"Invalid task: {task}. Please provide a valid task.")
         return
