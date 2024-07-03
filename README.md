@@ -69,12 +69,12 @@ The exception is when running the `spell-check-titles` task, as this does not mo
 
 ## Recommended workflow
 
-1. Merge Syncthing file conflicts
-2. Bump journal status
-3. Correct title spelling errors, or else future LLM calls may hallucinate the correct spellings
-4. Adding aliases helps with later linking steps.
-5. Linkify now that aliases are added and titles are corrected.
-6. Bump note status now that links are added.
+1. Merge Syncthing file conflicts: `poetry run obsidian-llm --task merge-syncthing-conflicts`
+2. Bump journal status: `poetry run obsidian-llm --task bump-journal-status`
+3. Correct title spelling errors, or else future LLM calls may hallucinate the correct spellings: `poetry run obsidian-llm --task spell-check-titles`
+4. Adding aliases helps with later linking steps: `poetry run obsidian-llm --task aliases`
+5. Linkify now that aliases are added and titles are corrected: `poetry run obsidian-llm --task linkify`
+6. Bump note status now that links are added: `poetry run obsidian-llm --task bump-note-status`
 
 Please see the [Command-line Reference] for details.
 
