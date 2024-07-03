@@ -31,6 +31,8 @@ def bump_journal_status(vault_path: str) -> None:
         for file_path in incomplete_journal_files
         if not any(blacklisted in file_path for blacklisted in filename_blacklist)
     ]
+    # sort the files by filename
+    incomplete_journal_files = sorted(incomplete_journal_files)
 
     logging.info(f"Found {len(incomplete_journal_files)} incomplete journal files.")
 
@@ -40,7 +42,7 @@ def bump_journal_status(vault_path: str) -> None:
     logging.info("Journal status bumping complete.")
 
 
-def process_journal_entry(file_path):
+def process_journal_entry(file_path) -> str:
 
     content = read_md(file_path=file_path)
     # delete everything after the `# Morning journal` header
@@ -68,9 +70,13 @@ def process_journal_entry(file_path):
         action_items = "\n".join(f"- {item}" for item in action_items)
         logging.info(f"Action items identified in {file_path}:\n{action_items}")
         if click.confirm(
-            "Please add the action items to your task tracker. Hit enter to continue. Use Keyboard Interrupt to stop the process."
+            "Please add the action items to your task tracker. Hit enter to continue.",
+            default=True,
         ):
             new_status = captured_tag
+        else:
+            logging.info("Not changing the status of the journal entry.")
+            return "Unchanged"
 
     # Update the status of the journal file
     frontmatter_dict, frontmatter_str = parse_frontmatter(file_path)
