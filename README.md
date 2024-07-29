@@ -34,7 +34,7 @@ This project aims to automate maintenance of an Obsidian.md vault created from B
   - `📝/🟥️`: _Stub_. 0 links.
   - `📝/🟧️`: _Processing_. 1-4 links.
   - `📝/🟩️`: _Evergreen_. 5+ links.
-- (planned feature) **Bumping Journal Status**: scans all journal notes tagged as incomplete (`📓/🟥️`) and decides whether to bump its status. In particular, we use ChatGPT to decide whether there are any action items in the journal. If there are, it will prompt the user to capture them into a task manager (manual step). When the user indicates they have finished capturing the tasks, the job continues. If ChatGPT finds no action items, the journal status is bumped without user interaction.
+- **Bumping Journal Status**: scans all journal notes tagged as incomplete (`📓/🟥️`) and decides whether to bump its status. In particular, we use ChatGPT to decide whether there are any action items in the journal. If there are, it will prompt the user to capture them into a task manager (manual step). When the user indicates they have finished capturing the tasks, the job continues. If ChatGPT finds no action items, the journal status is bumped without user interaction.
   - `📓/🟨`: _Captured_. The note contained action items, and the user has finished capturing them into a task manager.
   - `📓/🟩️`: _Processed_. The note contained no action items, and does not need to be processed further.
 
