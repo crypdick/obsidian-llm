@@ -42,5 +42,8 @@ def merge_syncthing_conflicts(vault_path: str) -> None:
             f"Original file: {original_file_path}, Conflict file: {conflict_file_path}"
         )
         run_meld(original_file_path, conflict_file_path)
-        # delete the conflict file after merging
-        os.remove(conflict_file_path)
+
+        # move the conflict file to /tmp after merging
+        backup_file_path = os.path.join("/tmp", os.path.basename(conflict_file_path))
+        os.rename(conflict_file_path, backup_file_path)
+        logging.info(f"Moved conflict file to {backup_file_path} after merging.")
