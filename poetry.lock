@@ -1247,15 +1247,15 @@ files = [
 "ruamel.yaml" = ">=0.15"
 
 [[package]]
-name = "pyautogen"
+name = "ag2"
 version = "0.2.35"
 description = "Enabling Next-Gen LLM Applications via Multi-Agent Conversation Framework"
 optional = false
 python-versions = "<3.13,>=3.8"
 groups = ["main"]
 files = [
-    {file = "pyautogen-0.2.35-py3-none-any.whl", hash = "sha256:cf7853ca66518474aab546530ebce0c5585e1556d404c15d7100b4f67364f522"},
-    {file = "pyautogen-0.2.35.tar.gz", hash = "sha256:7442e0bbe8810678a08a701a645d5734f887ccc223b2d21cd95bf68be29872a1"},
+    {file = "ag2-0.2.35-py3-none-any.whl", hash = "sha256:cf7853ca66518474aab546530ebce0c5585e1556d404c15d7100b4f67364f522"},
+    {file = "ag2-0.2.35.tar.gz", hash = "sha256:7442e0bbe8810678a08a701a645d5734f887ccc223b2d21cd95bf68be29872a1"},
 ]
 
 [package.dependencies]
